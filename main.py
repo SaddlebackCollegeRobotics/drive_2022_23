@@ -56,24 +56,30 @@ if __name__ == "__main__":
 
     #===============================================================
 
-    # self.odrv_axis.encoder.config.calib_scan_distance = 150
-    # self.odrv_axis.encoder.config.bandwidth = 500
+    odrv0.axis0.encoder.config.calib_scan_distance = 150
+    odrv0.axis0.encoder.config.bandwidth = 500
 
-    # self.odrv_axis.config.calibration_lockin.current = 20
-    # self.odrv_axis.config.calibration_lockin.ramp_time = 0.4
-    # self.odrv_axis.config.calibration_lockin.ramp_distance = 3.1415927410125732
-    # self.odrv_axis.config.calibration_lockin.accel = 20
-    # self.odrv_axis.config.calibration_lockin.vel = 40
+    #===============================================================
 
-    # self.odrv_axis.controller.config.vel_limit = 100
-    # self.odrv_axis.controller.config.pos_gain = 1
-    # self.odrv_axis.controller.config.vel_gain = \
-    #     0.02 * self.odrv_axis.motor.config.torque_constant * self.odrv_axis.encoder.config.cpr
-    # self.odrv_axis.controller.config.vel_integrator_gain = \
-    #     0.1 * self.odrv_axis.motor.config.torque_constant * self.odrv_axis.encoder.config.cpr
-    # self.odrv_axis.trap_traj.config.vel_limit = 30
-    # self.odrv_axis.trap_traj.config.accel_limit = 20
-    # self.odrv_axis.trap_traj.config.decel_limit = 20
+    odrv0.axis0.config.calibration_lockin.current = 20
+    odrv0.axis0.config.calibration_lockin.ramp_time = 0.4
+    odrv0.axis0.config.calibration_lockin.ramp_distance = 3.1415927410125732
+    odrv0.axis0.config.calibration_lockin.accel = 20
+    odrv0.axis0.config.calibration_lockin.vel = 40
+
+    #===============================================================
+
+    odrv0.axis0.controller.config.vel_limit = 100
+    odrv0.axis0.controller.config.pos_gain = 1
+    odrv0.axis0.controller.config.vel_gain = \
+        0.02 * odrv0.axis0.motor.config.torque_constant * odrv0.axis0.encoder.config.cpr
+    odrv0.axis0.controller.config.vel_integrator_gain = \
+        0.1 * odrv0.axis0.motor.config.torque_constant * odrv0.axis0.encoder.config.cpr
+    odrv0.axis0.trap_traj.config.vel_limit = 30
+    odrv0.axis0.trap_traj.config.accel_limit = 20
+    odrv0.axis0.trap_traj.config.decel_limit = 20
+    
+    #===============================================================
 
     time.sleep(2)
     print("done")

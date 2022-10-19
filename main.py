@@ -20,11 +20,23 @@ if __name__ == "__main__":
     odrv0SerNum = str(hex(odrv0.serial_number)).upper()
     print(odrv0SerNum.replace('0X',''))
 
-    logger.debug("Do you want to save/erase/reboot? [Y/N]")
-    SERcmd = input().upper()
+    # #==================================
+    # #Want to fix the problem of it sometimes jumping to different odrives for calibration
+    # #Testing two find_any() commands
+    # #did not work, found the same one twice.
+    # odrv1 = odrive.find_any()
 
-    if SERcmd == 'Y':
-        
+    # #test function
+    # odrv1SerNum = str(hex(odrv1.serial_number)).upper()
+    # print(odrv1SerNum.replace('0X',''))
+    # #===================================
+    # logger.debug("Do you want to save/erase/reboot? [Y/N]")
+    # SERcmd = input().upper()
+
+    # if SERcmd == 'Y':
+
+
+
 
     odrv0.config.enable_brake_resistor = False
     odrv0.config.brake_resistance = 0.0

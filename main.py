@@ -6,20 +6,27 @@ Date: NOT 11/31/2021
 
 import sys
 import time
+from tkinter import N, Y
 import odrive
+
+
 from odrive.enums import *
+
+
 #import fibre.libfibre
 #from enum import IntEnum
 from loguru import logger
 
 if __name__ == "__main__":
-
+  
     #initialize odrv0
     odrv0 = odrive.find_any()
 
     #test function
     odrv0SerNum = str(hex(odrv0.serial_number)).upper()
     print(odrv0SerNum.replace('0X',''))
+
+    #===========================================================
 
     odrv0.config.enable_brake_resistor = False
     odrv0.config.brake_resistance = 0.0
@@ -49,7 +56,7 @@ if __name__ == "__main__":
     #changed from ENCODER_MODE_HALL
     #actually, from odrive.enums import * allows enum (DUH!!!)
     odrv0.axis0.encoder.config.mode = ENCODER_MODE_HALL
-    
+
     odrv0.axis0.encoder.config.cpr = 42
     odrv0.axis0.encoder.config.use_index = False
     odrv0.axis0.encoder.config.ignore_illegal_hall_state = True
@@ -80,6 +87,13 @@ if __name__ == "__main__":
     odrv0.axis0.trap_traj.config.decel_limit = 20
     
     #===============================================================
+    #INPUT_MODE_PASSTHROUGH
+    odrv0.axis0.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
+
+    #CONTROL_MODE_VELOCITY_CONTROL
+    odrv0.axis0.controller.config.control_mode = 2
+
+    #===============================================================
 
     time.sleep(2)
     print("done")
@@ -94,6 +108,8 @@ if __name__ == "__main__":
     if odrv0.axis0.motor.error != 0:
         print("fawked up at motor clibration QUIT NOW")
         print("hold ctrl")
+        # To regenerate this file, nagivate to the top level of the ODrive repository and run:
+        # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
         print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 

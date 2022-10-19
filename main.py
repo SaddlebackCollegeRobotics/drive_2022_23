@@ -226,5 +226,28 @@ if __name__ == "__main__":
     logger.debug("trying to save...")
     odrv0.save_configuration()
     logger.debug("saved...")
+    
+
+
+    print("it all worked, run motor? [Y / N]")
+    runMotorChoice = input()
+    if runMotorChoice.upper() == 'Y':
+        
+        print("do you want set velocity? [Y / N]")
+        setVelocityYN = input()
+        
+        if setVelocityYN.upper() == 'Y':
+            print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
+            odrv0.axis0.controller.input_vel = input()
+            print(odrv0.axis0.controller.input_vel)
+        
+        print("set to closed loop control? (motor will spin). [Y / N]")
+        setCLC_YN = input()
+        if setCLC_YN.upper() == 'Y':
+            odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            input("press enter to stop...")
+            odrv0.axis0.requested_state = AXIS_STATE_IDLE
+
+    
 
     #YES

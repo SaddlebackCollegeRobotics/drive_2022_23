@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     #===================Reset=========================
     #If there were errors in the previous cycle, erase config would clear errors so you could start over
-    logger.debug("Do you want to erase? [Y/N]")
+    logger.debug("Do you want to erase previous configuration? [Y/N]")
     ERcmd = input()
 
     if ERcmd.upper() == 'Y':
@@ -54,7 +54,10 @@ if __name__ == "__main__":
 
     
     #=============ODRIVE CONFIGURATION===============
+    #Need to be set to true if we are using a psu with a brake resistor
     odrv0.config.enable_brake_resistor = False
+    #Odrivetool says the default value is 2.0 and to set it to default if not using br; look into this further.
+    #If we are using a brake resistor change this value to resistor ohms.
     odrv0.config.brake_resistance = 0.0
     odrv0.config.dc_bus_undervoltage_trip_level = 8.0
     odrv0.config.dc_bus_overvoltage_trip_level = 56.0
@@ -70,6 +73,7 @@ if __name__ == "__main__":
     odrv0.axis0.motor.config.requested_current_range = 100
     odrv0.axis0.motor.config.current_control_bandwidth = 2000
     odrv0.axis0.motor.config.current_lim = 100
+    # 473 is Kv of our neo motor. (Kv = RPM at max throttle)
     odrv0.axis0.motor.config.torque_constant = 8.27 / 473
     #================================================
 
@@ -77,11 +81,14 @@ if __name__ == "__main__":
     #Can use ENCODER_MODE_HALL as found in odrive.enums
     odrv0.axis0.encoder.config.mode = ENCODER_MODE_HALL
     odrv0.axis0.encoder.config.cpr = 42
-    #using an encoder with an index pin to allow pre-calibration of the encoder and encoder index search
-    #ours has index pins ; set it to true
+    #using an encoder with an index pin allows pre-calibration of the encoder and encoder index search
+    #ours has index pins(Z) ; can set this to true
     odrv0.axis0.encoder.config.use_index = False
-    #Changed from true to false
-    odrv0.axis0.encoder.config.ignore_illegal_hall_state = False
+    #Changed from true to false got illegalhallstate big surprise.
+    #When trying to request closed loop state and set vel = 3 got the following errors
+    #MotorError.UNKNOWN_TORQUE and MotorError.UNKNOWN_VOLTAGE_COMMAND
+    #Set this value to true and all 3 errors went away and it spun ; further research needed.
+    odrv0.axis0.encoder.config.ignore_illegal_hall_state = True
     odrv0.axis0.encoder.config.calib_scan_distance = 150
     odrv0.axis0.encoder.config.bandwidth = 500
     #=========================================================

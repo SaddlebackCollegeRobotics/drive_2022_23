@@ -62,9 +62,12 @@ if __name__ == "__main__":
     else:   
         odrv0.config.enable_brake_resistor = False
         odrv0.config.brake_resistance = 0.0
-    #Odrivetool says the default value is 2.0 and to set it to default if not using br; look into this further.
+    #Odrivetool says the default value is 2.0 
+    #(because the resitor that comes with the odrive is 50w 2ohm)
+    #and to set it to default if not using br; look into this further.
     #If we are using a brake resistor change this value to resistor ohms.
-    
+
+    #
     odrv0.config.dc_bus_undervoltage_trip_level = 8.0
     odrv0.config.dc_bus_overvoltage_trip_level = 56.0
     odrv0.config.dc_max_positive_current = 120.0

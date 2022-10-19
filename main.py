@@ -83,4 +83,42 @@ if __name__ == "__main__":
 
     time.sleep(2)
     print("done")
-    
+    time.sleep(1)
+
+    input("Make sure the motor is free to move, then press enter...")
+    logger.debug("Calibrating Odrive for NEO motor (you should hear a ""beep)...")
+
+    odrv0.axis0.requested_state = AXIS_STATE_MOTOR_CALIBRATION
+    time.sleep(3)
+
+    if odrv0.axis0.motor.error != 0:
+        print("fawked up at motor clibration QUIT NOW")
+        print("hold ctrl")
+        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        sys.exit()
+
+    logger.debug("setting motor to precalibrated")
+    odrv0.axis0.motor.config.pre_calibrated = True
+    time.sleep(2)
+
+    logger.debug("Calibrating Hall Offset...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
+    time.sleep(15)
+
+    logger.debug("Calibrating Hall Polarity...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
+    time.sleep(15)
+
+    logger.debug("Calibrating Hall Phase...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
+    time.sleep(15)
+
+
+
+    logger.debug("setting encoder to precalibrated...")
+    odrv0.axis0.encoder.config.pre_calibrated = True
+    time.sleep(2)
+
+    logger.debug("trying to save...")
+    odrv0.save_configuration()
+    logger.debug("saved...")

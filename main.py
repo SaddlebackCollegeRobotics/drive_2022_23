@@ -38,6 +38,7 @@ if __name__ == "__main__":
     #===================Reset=========================
     #If there were errors in the previous cycle, erase config would clear errors so you could start over
     logger.debug("Do you want to erase previous configuration? [Y/N]")
+    
     ERcmd = input()
 
     if ERcmd.upper() == 'Y':
@@ -48,26 +49,22 @@ if __name__ == "__main__":
             pass
 
         odrv0 = odrive.find_any()
-        print("Manual configuration erased.")
+        print("Previous configuration erased.")
     #================================================
 
     
     #=============ODRIVE CONFIGURATION===============
     #Need to be set to true if we are using a psu with a brake resistor
-    PSUChoice = input("using power supply..? [Y/N]")
-    if PSUChoice.upper() == 'Y':
+    logger.debug("Are you using a power supply with Brake Resistor?")
+    PSUcmd = input()
+    if PSUcmd.upper() == 'Y':
         odrv0.config.enable_brake_resistor = True
-        #maybe create new if in future if using different resistor (ie not 2ohms)
         odrv0.config.brake_resistance = 2.0
-    else:   
+    else:
         odrv0.config.enable_brake_resistor = False
+        #Odrivetool says the default value is 2.0 and to set it to default if not using br; look into this further.
+        #If we are using a brake resistor change this value to resistor ohms.
         odrv0.config.brake_resistance = 0.0
-    #Odrivetool says the default value is 2.0 
-    #(because the resitor that comes with the odrive is 50w 2ohm)
-    #and to set it to default if not using br; look into this further.
-    #If we are using a brake resistor change this value to resistor ohms.
-
-    #
     odrv0.config.dc_bus_undervoltage_trip_level = 8.0
     odrv0.config.dc_bus_overvoltage_trip_level = 56.0
     odrv0.config.dc_max_positive_current = 120.0
@@ -97,7 +94,7 @@ if __name__ == "__main__":
     #When trying to request closed loop state and set vel = 3 got the following errors
     #MotorError.UNKNOWN_TORQUE and MotorError.UNKNOWN_VOLTAGE_COMMAND
     #Set this value to true and all 3 errors went away and it spun ; further research needed.
-    odrv0.axis0.encoder.config.ignore_illegal_hall_state = True
+    odrv0.axis0.encoder.config.ignore_illegal_hall_state = False
     odrv0.axis0.encoder.config.calib_scan_distance = 150
     odrv0.axis0.encoder.config.bandwidth = 500
     #=========================================================
@@ -133,4 +130,6 @@ if __name__ == "__main__":
     #After every save_configuration / erase_configuration / reboot we have to find odrive again.
     odrv0 = odrive.find_any()
 
-
+#===========================TRYING CALIBRATIONS==============================
+    logger.debug("Start calibration? [Y/N]")
+    

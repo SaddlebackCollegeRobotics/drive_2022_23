@@ -29,15 +29,21 @@ if __name__ == "__main__":
     odrv0.config.dc_max_negative_current = -20.0
     odrv0.config.max_regen_current = 0
 
+    #=============================================================
 
     odrv0.axis0.motor.config.pole_pairs = 7
     odrv0.axis0.motor.config.calibration_current = 5
     odrv0.axis0.motor.config.resistance_calib_max_voltage = 3.0
-    odrv0.axis0.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT
+    
+    #changed from MOTOR_TYPE_HIGH_CURRENT
+    odrv0.axis0.motor.config.motor_type = 0
+
     odrv0.axis0.motor.config.current_lim = 100
     odrv0.axis0.motor.config.current_control_bandwidth = 2000
     odrv0.axis0.motor.config.requested_current_range = 100
     odrv0.axis0.motor.config.torque_constant = 8.27 / 473
+
+    #===============================
 
     # self.odrv_axis.encoder.config.mode = ENCODER_MODE_HALL
     # self.odrv_axis.encoder.config.cpr = 42
@@ -64,5 +70,5 @@ if __name__ == "__main__":
     # self.odrv_axis.trap_traj.config.decel_limit = 20
 
     time.sleep(5)
-    logger.debug("hi")
+    print("hi")
     

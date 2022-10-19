@@ -55,7 +55,8 @@ if __name__ == "__main__":
     
     #=============ODRIVE CONFIGURATION===============
     #Need to be set to true if we are using a psu with a brake resistor
-    PSUChoice = input("using power supply..? [Y/N]")
+    logger.debug("using power supply..? [Y/N]")
+    PSUChoice = input()
     if PSUChoice.upper() == 'Y':
         odrv0.config.enable_brake_resistor = True
         #maybe create new if in future if using different resistor (ie not 2ohms)
@@ -124,15 +125,106 @@ if __name__ == "__main__":
     odrv0.axis0.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
 
     # saving the new configuration
-    logger.debug("Saving manual configuration and rebooting...")
+    print("Saving manual configuration and rebooting...")
     try:
         odrv0.save_configuration()
 
     except fibre.libfibre.ObjectLostError:
         pass
-    logger.debug("Manual configuration saved.")
+    print("Manual configuration saved.")
     #After every save_configuration / erase_configuration / reboot we have to find odrive again.
     odrv0 = odrive.find_any()
 
+    #===========================================================================================
 
-#hi
+
+    #===============================================================
+    #INPUT_MODE_PASSTHROUGH
+    odrv0.axis0.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
+
+    #CONTROL_MODE_VELOCITY_CONTROL
+    odrv0.axis0.controller.config.control_mode = 2
+
+    #===============================================================
+
+
+    input("Make sure the motor is free to move, then press enter...")
+    logger.debug("Calibrating Odrive for NEO motor (you should hear a ""beep)...")
+
+    odrv0.axis0.requested_state = AXIS_STATE_MOTOR_CALIBRATION
+    time.sleep(15)
+    
+    if odrv0.axis0.motor.error != 0:
+        print("fawked up at motor clibration QUIT NOW")
+        print("hold ctrl")
+        # To regenerate this file, nagivate to the top level of the ODrive repository and run:
+        # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
+        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        sys.exit()
+
+    # logger.debug("full calibaration")
+    # odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
+    # time.sleep(40)
+
+    logger.debug("setting motor to precalibrated")
+    odrv0.axis0.motor.config.pre_calibrated = True
+    time.sleep(2)
+
+
+    logger.debug("Calibrating Hall Polarity...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
+    time.sleep(15)
+
+    if odrv0.axis0.encoder.error != 0:
+        print("fawked up at Calibrating Hall Polarity QUIT NOW")
+        print("hold ctrl")
+        # To regenerate this file, nagivate to the top level of the ODrive repository and run:
+        # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
+        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        sys.exit()
+
+
+
+
+    logger.debug("Calibrating Hall Phase...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
+    time.sleep(15)
+
+    if odrv0.axis0.encoder.error != 0:
+        print("fawked up at Calibrating Hall Phase QUIT NOW")
+        print("hold ctrl")
+        # To regenerate this file, nagivate to the top level of the ODrive repository and run:
+        # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
+        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        sys.exit()
+
+    
+
+
+
+
+    logger.debug("Calibrating Hall Offset...")
+    odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
+    time.sleep(15)
+
+    if odrv0.axis0.encoder.error != 0:
+        print("fawked up at Calibrating Hall Offset QUIT NOW")
+        print("hold ctrl")
+        # To regenerate this file, nagivate to the top level of the ODrive repository and run:
+        # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
+        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        sys.exit()
+
+    
+
+    
+
+    logger.debug("setting encoder to precalibrated...")
+    odrv0.axis0.encoder.config.pre_calibrated = True
+    time.sleep(2)
+
+    logger.debug("trying to save...")
+    odrv0.save_configuration()
+    logger.debug("saved...")
+
+    #YES

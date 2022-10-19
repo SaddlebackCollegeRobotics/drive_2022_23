@@ -22,7 +22,7 @@ if __name__ == "__main__":
     print(odrv0SerNum.replace('0X',''))
 
     # #==================================
-    # #Want to fix the problem of it sometimes jumping to different odrives for calibration
+    # #TODO: Want to fix the problem of it sometimes jumping to different odrives for calibration
     # #Testing two find_any() commands
     # #did not work, found the same one twice.
     # odrv1 = odrive.find_any()
@@ -30,6 +30,10 @@ if __name__ == "__main__":
     # #test function
     # odrv1SerNum = str(hex(odrv1.serial_number)).upper()
     # print(odrv1SerNum.replace('0X',''))
+    #Next approach: look more into fibre.Domain for finer grained control over connection.
+    #Can we use serial numbers to connect? We would need to have them preloaded into variables.
+    #find_any has a parameter for serial numbers.
+
 
     #===================Reset=========================
     #If there were errors in the previous cycle, erase config would clear errors so you could start over

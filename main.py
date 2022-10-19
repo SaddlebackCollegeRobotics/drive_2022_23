@@ -48,17 +48,23 @@ if __name__ == "__main__":
             pass
 
         odrv0 = odrive.find_any()
-
-    logger.debug("Manual configuration erased.")
+        print("Manual configuration erased.")
     #================================================
 
     
     #=============ODRIVE CONFIGURATION===============
     #Need to be set to true if we are using a psu with a brake resistor
-    odrv0.config.enable_brake_resistor = False
+    PSUChoice = input("using power supply..? [Y/N]")
+    if PSUChoice.upper() == 'Y':
+        odrv0.config.enable_brake_resistor = True
+        #maybe create new if in future if using different resistor (ie not 2ohms)
+        odrv0.config.brake_resistance = 2.0
+    else:   
+        odrv0.config.enable_brake_resistor = False
+        odrv0.config.brake_resistance = 0.0
     #Odrivetool says the default value is 2.0 and to set it to default if not using br; look into this further.
     #If we are using a brake resistor change this value to resistor ohms.
-    odrv0.config.brake_resistance = 0.0
+    
     odrv0.config.dc_bus_undervoltage_trip_level = 8.0
     odrv0.config.dc_bus_overvoltage_trip_level = 56.0
     odrv0.config.dc_max_positive_current = 120.0

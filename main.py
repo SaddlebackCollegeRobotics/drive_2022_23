@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     #test function -- getting serial number from the located odrive
     odrv0SerNum = str(hex(odrv0.serial_number)).upper()
-    print(odrv0SerNum.replace('0X',''))
+    print("Serial Number of connected odrive: ",odrv0SerNum.replace('0X',''))
 
     # #==================================
     # #TODO: Want to fix the problem of it sometimes jumping to different odrives for calibration
@@ -38,18 +38,14 @@ if __name__ == "__main__":
 
     #===================Reset=========================
     #If there were errors in the previous cycle, erase config would clear errors so you could start over
-    logger.debug("Do you want to erase previous configuration? [Y/N]")
-    ERcmd = input()
+    try:
+        odrv0.erase_configuration()
 
-    if ERcmd.upper() == 'Y':
-        try:
-            odrv0.erase_configuration()
+    except fibre.libfibre.ObjectLostError:
+        pass
 
-        except fibre.libfibre.ObjectLostError:
-            pass
-
-        odrv0 = odrive.find_any()
-        print("Manual configuration erased.")
+    odrv0 = odrive.find_any()
+    print("Manual configuration erased.")
     #================================================
 
     
@@ -149,7 +145,7 @@ if __name__ == "__main__":
 
 
     input("Make sure the motor is free to move, then press enter...")
-    logger.debug("Calibrating Odrive for NEO motor (you should hear a ""beep)...")
+    logger.debug("Calibrating Odrive for NEO motor (you should hear a beep)...")
 
     odrv0.axis0.requested_state = AXIS_STATE_MOTOR_CALIBRATION
     time.sleep(15)
@@ -205,7 +201,7 @@ if __name__ == "__main__":
 
     logger.debug("Calibrating Hall Offset...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    time.sleep(15)
+    time.sleep(25)
 
     if odrv0.axis0.encoder.error != 0:
         print("fawked up at Calibrating Hall Offset QUIT NOW")
@@ -229,11 +225,11 @@ if __name__ == "__main__":
     
 
 
-    print("it all worked, run motor? [Y / N]")
+    print("[Y / N] it all worked, run motor?")
     runMotorChoice = input()
     if runMotorChoice.upper() == 'Y':
         
-        print("do you want set velocity? [Y / N]")
+        print("[Y / N] do you want set velocity?")
         setVelocityYN = input()
         
         if setVelocityYN.upper() == 'Y':
@@ -241,13 +237,13 @@ if __name__ == "__main__":
             odrv0.axis0.controller.input_vel = input()
             print(odrv0.axis0.controller.input_vel)
         
-        print("set to closed loop control? (motor will spin). [Y / N]")
-        setCLC_YN = input()
-        if setCLC_YN.upper() == 'Y':
+        print("[Y / N] set to closed loop control? (motor will spin). ")
+        setCLC_cmd = input()
+        if setCLC_cmd.upper() == 'Y':
             odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             input("press enter to stop...")
             odrv0.axis0.requested_state = AXIS_STATE_IDLE
 
     
 
-    #YES
+    #YES !

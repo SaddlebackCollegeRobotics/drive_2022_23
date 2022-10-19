@@ -1,7 +1,7 @@
 """
-AUTHOR: NOT Parham Sharafoleslami
+AUTHOR: Maxwell Rehm & Matin Qurbanzadeh
 Project: Odrive Motor configuration
-Date: NOT 11/31/2021
+Date: 10/17/2022
 """
 
 import sys
@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
     logger.debug("Calibrating Hall Offset...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    time.sleep(15)
+    time.sleep(25)
 
     if odrv0.axis0.encoder.error != 0:
         print("fawked up at Calibrating Hall Offset QUIT NOW")

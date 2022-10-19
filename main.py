@@ -7,7 +7,7 @@ Date: NOT 11/31/2021
 import sys
 import time
 import odrive
-#from odrive.enums import *
+from odrive.enums import *
 #import fibre.libfibre
 #from enum import IntEnum
 from loguru import logger
@@ -36,19 +36,25 @@ if __name__ == "__main__":
     odrv0.axis0.motor.config.resistance_calib_max_voltage = 3.0
     
     #changed from MOTOR_TYPE_HIGH_CURRENT
-    odrv0.axis0.motor.config.motor_type = 0
+    #actually, from odrive.enums import * allows enum (DUH!!!)
+    odrv0.axis0.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT
 
     odrv0.axis0.motor.config.current_lim = 100
     odrv0.axis0.motor.config.current_control_bandwidth = 2000
     odrv0.axis0.motor.config.requested_current_range = 100
     odrv0.axis0.motor.config.torque_constant = 8.27 / 473
 
-    #===============================
+    #=============================================================
 
-    # self.odrv_axis.encoder.config.mode = ENCODER_MODE_HALL
-    # self.odrv_axis.encoder.config.cpr = 42
-    # self.odrv_axis.encoder.config.use_index = False
-    # self.odrv_axis.encoder.config.ignore_illegal_hall_state = True
+    #changed from ENCODER_MODE_HALL
+    #actually, from odrive.enums import * allows enum (DUH!!!)
+    odrv0.axis0.encoder.config.mode = ENCODER_MODE_HALL
+    
+    odrv0.axis0.encoder.config.cpr = 42
+    odrv0.axis0.encoder.config.use_index = False
+    odrv0.axis0.encoder.config.ignore_illegal_hall_state = True
+
+    #===============================================================
 
     # self.odrv_axis.encoder.config.calib_scan_distance = 150
     # self.odrv_axis.encoder.config.bandwidth = 500
@@ -69,6 +75,6 @@ if __name__ == "__main__":
     # self.odrv_axis.trap_traj.config.accel_limit = 20
     # self.odrv_axis.trap_traj.config.decel_limit = 20
 
-    time.sleep(5)
-    print("hi")
+    time.sleep(2)
+    print("done")
     

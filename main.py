@@ -1,7 +1,7 @@
 """
-AUTHOR: NOT Parham Sharafoleslami
+AUTHOR: Max Rehm & Matin Qurbanzadeh
 Project: Odrive Motor configuration
-Date: NOT 11/31/2021
+Date: 10/19/2022
 """
 
 import sys

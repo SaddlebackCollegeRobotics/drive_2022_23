@@ -229,7 +229,14 @@ if __name__ == "__main__":
     time.sleep(2)
 
     logger.debug("trying to save...")
-    odrv0.save_configuration()
+    # odrv0.save_configuration()
+    try:
+        odrv0.save_configuration()
+
+    except fibre.libfibre.ObjectLostError:
+        pass
+
+    odrv0 = odrive.find_any()
     logger.debug("saved...")
     
     #==================================================================================
@@ -241,7 +248,7 @@ if __name__ == "__main__":
     runMotorChoice = input()
     if runMotorChoice.upper() == 'Y':
         
-        print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
+        print("enter int for velocity. 1-20")
         odrv0.axis0.controller.input_vel = input()
         print(odrv0.axis0.controller.input_vel)
         

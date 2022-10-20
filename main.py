@@ -1,7 +1,7 @@
 """
-AUTHOR: Maxwell Rehm & Matin Qurbanzadeh
+AUTHOR: NOT Parham Sharafoleslami
 Project: Odrive Motor configuration
-Date: 10/17/2022
+Date: NOT 11/31/2021
 """
 
 import sys
@@ -138,7 +138,6 @@ if __name__ == "__main__":
     #===========================================================================================
 
 
-
     #===============================================================
     #INPUT_MODE_PASSTHROUGH
     odrv0.axis0.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
@@ -206,7 +205,7 @@ if __name__ == "__main__":
 
     logger.debug("Calibrating Hall Offset...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    time.sleep(25)
+    time.sleep(15)
 
     if odrv0.axis0.encoder.error != 0:
         print("fawked up at Calibrating Hall Offset QUIT NOW")
@@ -251,4 +250,4 @@ if __name__ == "__main__":
 
     
 
-#we need to add this comment
+    #YES

@@ -248,8 +248,8 @@ if __name__ == "__main__":
             input("press enter to stop...")
             odrv0.axis0.requested_state = AXIS_STATE_IDLE
 
-    
 
     #YES
 
 #I am adding this comment to max
+

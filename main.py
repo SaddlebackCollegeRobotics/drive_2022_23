@@ -1,7 +1,7 @@
 """
-AUTHOR: Max Rehm & Matin Qurbanzadeh
+AUTHOR: NOT Parham Sharafoleslami
 Project: Odrive Motor configuration
-Date: 10/19/2022
+Date: NOT 11/31/2021
 """
 
 import sys
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     #test function -- getting serial number from the located odrive
     odrv0SerNum = str(hex(odrv0.serial_number)).upper()
-    print("Serial Number of connected odrive: ",odrv0SerNum.replace('0X',''))
+    print(odrv0SerNum.replace('0X',''))
 
     # #==================================
     # #TODO: Want to fix the problem of it sometimes jumping to different odrives for calibration
@@ -38,14 +38,18 @@ if __name__ == "__main__":
 
     #===================Reset=========================
     #If there were errors in the previous cycle, erase config would clear errors so you could start over
-    try:
-        odrv0.erase_configuration()
+    logger.debug("Do you want to erase previous configuration? [Y/N]")
+    ERcmd = input()
 
-    except fibre.libfibre.ObjectLostError:
-        pass
+    if ERcmd.upper() == 'Y':
+        try:
+            odrv0.erase_configuration()
 
-    odrv0 = odrive.find_any()
-    print("Manual configuration erased.")
+        except fibre.libfibre.ObjectLostError:
+            pass
+
+        odrv0 = odrive.find_any()
+        print("Manual configuration erased.")
     #================================================
 
     
@@ -131,7 +135,7 @@ if __name__ == "__main__":
     #After every save_configuration / erase_configuration / reboot we have to find odrive again.
     odrv0 = odrive.find_any()
 
-    #=======================================CALIBRATION SEQUENCE==============================================
+    #===========================================================================================
 
 
     #===============================================================
@@ -143,44 +147,36 @@ if __name__ == "__main__":
 
     #===============================================================
 
-    #THESE CALIBRATION STATES HAVE TO BE IN ORDER, ELSE IT WILL BE MEAN.
+
     input("Make sure the motor is free to move, then press enter...")
-    logger.debug("Calibrating Odrive for NEO motor (you should hear a beep)...")
+    logger.debug("Calibrating Odrive for NEO motor (you should hear a ""beep)...")
 
-
-    #==============================MOTOR CALIBRATION=================================
-
-    # MEASURING PHASE RESISTANCE/INDUCTANCE OF MOTOR
-    # to store these values, do motor.config.pre_calibrated = True, as we do below.
     odrv0.axis0.requested_state = AXIS_STATE_MOTOR_CALIBRATION
-    # Sleep to allow the motor to finish the calibrate process.
     time.sleep(15)
     
-    # If there was an error during motor calibration, exit and link to error list.
     if odrv0.axis0.motor.error != 0:
-        print("Error at motor clibration QUIT NOW")
+        print("fawked up at motor clibration QUIT NOW")
         print("hold ctrl")
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
         print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
-    #================================================================================
+    # logger.debug("full calibaration")
+    # odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE
+    # time.sleep(40)
 
-    #================================ENCODER CALIBRATION===============================
-    # This stores motor.config.phase_resistance and motor.config.phase_inductance to the odrive memory.
-    logger.debug("Setting motor to precalibrated")
+    logger.debug("setting motor to precalibrated")
     odrv0.axis0.motor.config.pre_calibrated = True
     time.sleep(2)
 
-    # Rotate the motor in lockin and calibrate hall polarity
+
     logger.debug("Calibrating Hall Polarity...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
     time.sleep(15)
 
-    # If there was an error during encoder polarity calibration, exit and link to error list.
     if odrv0.axis0.encoder.error != 0:
-        print("Error at Calibrating Hall Polarity QUIT NOW")
+        print("fawked up at Calibrating Hall Polarity QUIT NOW")
         print("hold ctrl")
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
@@ -188,15 +184,14 @@ if __name__ == "__main__":
         sys.exit()
 
 
-    # Rotate the motor for 30s to calibrate hall sensor edge offsets
-    # Note: The phase offset is not calibrated at this time, so the map is only relative
+
+
     logger.debug("Calibrating Hall Phase...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
     time.sleep(15)
 
-    # If there was an error during encoder phase calibration, exit and link to error list.
     if odrv0.axis0.encoder.error != 0:
-        print("Error at Calibrating Hall Phase QUIT NOW")
+        print("fawked up at Calibrating Hall Phase QUIT NOW")
         print("hold ctrl")
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
@@ -206,25 +201,25 @@ if __name__ == "__main__":
     
 
 
-    # Turns the motor in one direction for a few seconds and then back to measure the offset between the encoder position and the electrical phase.
-    # Needs motor to be calibrated
-    # If successful, encoder calibration will make the encoder.is_ready == True
+
+
     logger.debug("Calibrating Hall Offset...")
     odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    time.sleep(25)
+    time.sleep(15)
 
-    # If there was an error during encoder offset calibration, exit and link to error list.
     if odrv0.axis0.encoder.error != 0:
-        print("Error at Calibrating Hall Offset QUIT NOW")
+        print("fawked up at Calibrating Hall Offset QUIT NOW")
         print("hold ctrl")
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
         print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
+    
 
+    
 
-    logger.debug("Setting encoder to precalibrated...")
+    logger.debug("setting encoder to precalibrated...")
     odrv0.axis0.encoder.config.pre_calibrated = True
     time.sleep(2)
 
@@ -232,26 +227,27 @@ if __name__ == "__main__":
     odrv0.save_configuration()
     logger.debug("saved...")
     
-    #==================================================================================
 
 
-    #===================================RUN SEQUENCE===================================
-
-    print("[Y / N] it all worked, run motor?")
+    print("it all worked, run motor? [Y / N]")
     runMotorChoice = input()
     if runMotorChoice.upper() == 'Y':
         
-        print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
-        odrv0.axis0.controller.input_vel = input()
-        print(odrv0.axis0.controller.input_vel)
+        print("do you want set velocity? [Y / N]")
+        setVelocityYN = input()
         
-        print("[Y / N] set to closed loop control? (motor will spin). ")
-        setCLC_cmd = input()
-        if setCLC_cmd.upper() == 'Y':
+        if setVelocityYN.upper() == 'Y':
+            print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
+            odrv0.axis0.controller.input_vel = input()
+            print(odrv0.axis0.controller.input_vel)
+        
+        print("set to closed loop control? (motor will spin). [Y / N]")
+        setCLC_YN = input()
+        if setCLC_YN.upper() == 'Y':
             odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             input("press enter to stop...")
             odrv0.axis0.requested_state = AXIS_STATE_IDLE
 
-    #==================================================================================
+    
 
-    #YES !
+    #YES

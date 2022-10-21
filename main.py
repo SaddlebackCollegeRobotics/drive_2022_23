@@ -4,14 +4,20 @@ Project: Odrive Motor configuration
 Date: 10/19/2022
 """
 
+from cgi import test
 import sys
 import time
 from tkinter import N, Y
 import odrive
 from odrive.enums import *
 import fibre.libfibre
+#import contexlib
 #from enum import IntEnum
 from loguru import logger
+
+#
+ #       with contextlib.suppress(fibre.libfibre.ObjectLostError):
+  #          odrv_num.erase_configuration()
 
 if __name__ == "__main__":
 
@@ -38,6 +44,7 @@ if __name__ == "__main__":
 
     def config_motor(odrv_num, axis_num):
 
+        
         #test function -- getting serial number from the located odrive
         odrvSerNum = str(hex(odrv.serial_number)).upper()
         print("Serial Number of connected odrive: ",odrvSerNum.replace('0X',''))
@@ -51,11 +58,13 @@ if __name__ == "__main__":
         except fibre.libfibre.ObjectLostError:
             pass
 
+        #FIX THIS.
         odrv_num = odrive.find_any()
         print("Manual configuration erased.")
         #================================================
 
-        
+        axis = getattr(odrv_num, f'axis{axis_num}')
+
         #=============ODRIVE CONFIGURATION===============
         #Need to be set to true if we are using a psu with a brake resistor
         logger.debug("using power supply..? [Y/N]")
@@ -81,51 +90,51 @@ if __name__ == "__main__":
         #================================================
 
         #=============MOTOR CONFIGURATION================
-        odrv_num.axis_num.motor.config.pole_pairs = 7
-        odrv_num.axis_num.motor.config.resistance_calib_max_voltage = 3.0
-        odrv_num.axis_num.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT
-        odrv_num.axis_num.motor.config.requested_current_range = 100
-        odrv_num.axis_num.motor.config.current_control_bandwidth = 2000
-        odrv_num.axis_num.motor.config.current_lim = 100
+        axis.motor.config.pole_pairs = 7
+        axis.motor.config.resistance_calib_max_voltage = 3.0
+        axis.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT
+        axis.motor.config.requested_current_range = 100
+        axis.motor.config.current_control_bandwidth = 2000
+        axis.motor.config.current_lim = 100
         # 473 is Kv of our neo motor. (Kv = RPM at max throttle)
-        odrv_num.axis_num.motor.config.torque_constant = 8.27 / 473
+        axis.motor.config.torque_constant = 8.27 / 473
         #================================================
 
         #================ENCODER CONFIGURATION====================
         #Can use ENCODER_MODE_HALL as found in odrive.enums
-        odrv_num.axis_num.encoder.config.mode = ENCODER_MODE_HALL
-        odrv_num.axis_num.encoder.config.cpr = 42
+        axis.encoder.config.mode = ENCODER_MODE_HALL
+        axis.encoder.config.cpr = 42
         #using an encoder with an index pin allows pre-calibration of the encoder and encoder index search
         #ours has index pins(Z) ; can set this to true
-        odrv_num.axis_num.encoder.config.use_index = False
+        axis.encoder.config.use_index = False
         #Changed from true to false got illegalhallstate big surprise.
         #When trying to request closed loop state and set vel = 3 got the following errors
         #MotorError.UNKNOWN_TORQUE and MotorError.UNKNOWN_VOLTAGE_COMMAND
         #Set this value to true and all 3 errors went away and it spun ; further research needed.
-        odrv_num.axis_num.encoder.config.ignore_illegal_hall_state = True
-        odrv_num.axis_num.encoder.config.calib_scan_distance = 150
-        odrv_num.axis_num.encoder.config.bandwidth = 500
+        axis.encoder.config.ignore_illegal_hall_state = True
+        axis.encoder.config.calib_scan_distance = 150
+        axis.encoder.config.bandwidth = 500
         #=========================================================
 
 
-        odrv_num.axis_num.config.calibration_lockin.current = 20
-        odrv_num.axis_num.config.calibration_lockin.ramp_time = 0.4
-        odrv_num.axis_num.config.calibration_lockin.ramp_distance = 3.1415927410125732
-        odrv_num.axis_num.config.calibration_lockin.accel = 20
-        odrv_num.axis_num.config.calibration_lockin.vel = 40
+        axis.config.calibration_lockin.current = 20
+        axis.config.calibration_lockin.ramp_time = 0.4
+        axis.config.calibration_lockin.ramp_distance = 3.1415927410125732
+        axis.config.calibration_lockin.accel = 20
+        axis.config.calibration_lockin.vel = 40
 
-        odrv_num.axis_num.controller.config.vel_limit = 100
-        odrv_num.axis_num.controller.config.pos_gain = 1
-        odrv_num.axis_num.controller.config.vel_gain = \
-            0.02 * odrv_num.axis_num.motor.config.torque_constant * odrv_num.axis_num.encoder.config.cpr
-        odrv_num.axis_num.controller.config.vel_integrator_gain = \
-            0.1 * odrv_num.axis_num.motor.config.torque_constant * odrv_num.axis_num.encoder.config.cpr
-        odrv_num.axis_num.trap_traj.config.vel_limit = 30
-        odrv_num.axis_num.trap_traj.config.accel_limit = 20
-        odrv_num.axis_num.trap_traj.config.decel_limit = 20
+        axis.controller.config.vel_limit = 100
+        axis.controller.config.pos_gain = 1
+        axis.controller.config.vel_gain = \
+            0.02 * axis.motor.config.torque_constant * axis.encoder.config.cpr
+        axis.controller.config.vel_integrator_gain = \
+            0.1 * axis.motor.config.torque_constant * axis.encoder.config.cpr
+        axis.trap_traj.config.vel_limit = 30
+        axis.trap_traj.config.accel_limit = 20
+        axis.trap_traj.config.decel_limit = 20
 
-        odrv_num.axis_num.controller.config.input_mode = INPUT_MODE_PASSTHROUGH      #INPUT_MODE_VEL_RAMP
-        odrv_num.axis_num.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
+        axis.controller.config.input_mode = INPUT_MODE_PASSTHROUGH      #INPUT_MODE_VEL_RAMP
+        axis.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
 
         # saving the new configuration
         print("Saving manual configuration and rebooting...")
@@ -139,16 +148,17 @@ if __name__ == "__main__":
         odrv_num = odrive.find_any()
 
 
-    def calib_motor(odrv_num, axis_num):
+    def calib_motor(odrv_num, axis_num, testMotor):
         #=======================================CALIBRATION SEQUENCE==============================================
 
+        axis = getattr(odrv_num, f'axis{axis_num}')
 
         #===============================================================
         #INPUT_MODE_PASSTHROUGH
-        odrv_num.axis_num.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
+        odrv_num.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
 
         #CONTROL_MODE_VELOCITY_CONTROL
-        odrv_num.axis_num.controller.config.control_mode = 2
+        axis.controller.config.control_mode = 2
 
         #===============================================================
 
@@ -161,12 +171,12 @@ if __name__ == "__main__":
 
         # MEASURING PHASE RESISTANCE/INDUCTANCE OF MOTOR
         # to store these values, do motor.config.pre_calibrated = True, as we do below.
-        odrv_num.axis_num.requested_state = axis_num_STATE_MOTOR_CALIBRATION
+        axis.requested_state = AXIS_STATE_MOTOR_CALIBRATION
         # Sleep to allow the motor to finish the calibrate process.
         time.sleep(15)
         
         # If there was an error during motor calibration, exit and link to error list.
-        if odrv_num.axis_num.motor.error != 0:
+        if axis.motor.error != 0:
             print("Error at motor clibration QUIT NOW")
             print("hold ctrl")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
@@ -184,11 +194,11 @@ if __name__ == "__main__":
 
         # Rotate the motor in lockin and calibrate hall polarity
         logger.debug("Calibrating Hall Polarity...")
-        odrv_num.axis_num.requested_state = axis_num_STATE_ENCODER_HALL_POLARITY_CALIBRATION
+        axis.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
         time.sleep(15)
 
         # If there was an error during encoder polarity calibration, exit and link to error list.
-        if odrv_num.axis_num.encoder.error != 0:
+        if axis.encoder.error != 0:
             print("Error at Calibrating Hall Polarity QUIT NOW")
             print("hold ctrl")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
@@ -200,11 +210,11 @@ if __name__ == "__main__":
         # Rotate the motor for 30s to calibrate hall sensor edge offsets
         # Note: The phase offset is not calibrated at this time, so the map is only relative
         logger.debug("Calibrating Hall Phase...")
-        odrv_num.axis_num.requested_state = axis_num_STATE_ENCODER_HALL_PHASE_CALIBRATION
+        axis.requested_state = axis_num_STATE_ENCODER_HALL_PHASE_CALIBRATION
         time.sleep(15)
 
         # If there was an error during encoder phase calibration, exit and link to error list.
-        if odrv_num.axis_num.encoder.error != 0:
+        if axis.encoder.error != 0:
             print("Error at Calibrating Hall Phase QUIT NOW")
             print("hold ctrl")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
@@ -219,11 +229,11 @@ if __name__ == "__main__":
         # Needs motor to be calibrated
         # If successful, encoder calibration will make the encoder.is_ready == True
         logger.debug("Calibrating Hall Offset...")
-        odrv.axis_num.requested_state = axis_num_STATE_ENCODER_OFFSET_CALIBRATION
+        axis.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
         time.sleep(25)
 
         # If there was an error during encoder offset calibration, exit and link to error list.
-        if odrv.axis_num.encoder.error != 0:
+        if axis.encoder.error != 0:
             print("Error at Calibrating Hall Offset QUIT NOW")
             print("hold ctrl")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
@@ -234,7 +244,7 @@ if __name__ == "__main__":
 
 
         logger.debug("Setting encoder to precalibrated...")
-        odrv.axis_num.encoder.config.pre_calibrated = True
+        axis.encoder.config.pre_calibrated = True
         time.sleep(2)
 
         logger.debug("trying to save...")
@@ -245,29 +255,34 @@ if __name__ == "__main__":
 
     
         #===================================RUN SEQUENCE===================================
-
-        print("[Y / N] it all worked, run motor?")
-        runMotorChoice = input()
-        if runMotorChoice.upper() == 'Y':
-            
-            print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
-            odrv.axis_num.controller.input_vel = input()
-            print(odrv.axis_num.controller.input_vel)
-            
-            print("[Y / N] set to closed loop control? (motor will spin). ")
-            setCLC_cmd = input()
-            if setCLC_cmd.upper() == 'Y':
-                odrv.axis_num.requested_state = axis_num_STATE_CLOSED_LOOP_CONTROL
-                input("press enter to stop...")
-                odrv.axis_num.requested_state = axis_num_STATE_IDLE
+        if testMotor == 'Y':
+            print("[Y / N] it all worked, run motor?")
+            runMotorChoice = input()
+            if runMotorChoice.upper() == 'Y':
+                
+                print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
+                axis.controller.input_vel = input()
+                print(axis.controller.input_vel)
+                
+                print("[Y / N] set to closed loop control? (motor will spin). ")
+                setCLC_cmd = input()
+                if setCLC_cmd.upper() == 'Y':
+                    axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+                    input("press enter to stop...")
+                    axis.requested_state = AXIS_STATE_IDLE
 
         #==================================================================================
 
+    motorTestCMD = 'N'
+    logger.debug("Would you like to test each motor individually after each is calibrated[Y], if not just hit enter...\n")
+    logger.debug("Note: You will still be prompted to test all motors at once.")
+    if input().upper() == 'Y':
+        motorTestCMD = input().upper()
 
     #loop through each odrive that is connected and configure/calibrate each axis_num.
     for odrv in odrives:
         config_motor(odrv, 1)
-        config_motor(odrv, 2)
         calib_motor(odrv, 1)
+        config_motor(odrv, 2)
         calib_motor(odrv, 2)
     #YES !

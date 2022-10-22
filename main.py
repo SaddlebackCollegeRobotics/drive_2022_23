@@ -4,18 +4,17 @@ Project: Odrive Motor configuration
 Date: 10/19/2022
 """
 
-from cgi import test
 import sys
 import time
-from tkinter import N, Y
 import odrive
 from odrive.enums import *
 import fibre.libfibre
-#import contexlib
 #from enum import IntEnum
 from loguru import logger
 
-#
+
+
+#import contexlib
  #       with contextlib.suppress(fibre.libfibre.ObjectLostError):
   #          odrv_num.erase_configuration()
 
@@ -81,7 +80,7 @@ if __name__ == "__main__":
         #and to set it to default if not using br; look into this further.
         #If we are using a brake resistor change this value to resistor ohms.
 
-        #
+
         odrv_num.config.dc_bus_undervoltage_trip_level = 8.0
         odrv_num.config.dc_bus_overvoltage_trip_level = 56.0
         odrv_num.config.dc_max_positive_current = 120.0
@@ -274,15 +273,18 @@ if __name__ == "__main__":
         #==================================================================================
 
     motorTestCMD = 'N'
-    logger.debug("Would you like to test each motor individually after each is calibrated[Y], if not just hit enter...\n")
+    logger.debug("Would you like to test each motor individually after each is calibrated[Y], if not just hit enter...")
     logger.debug("Note: You will still be prompted to test all motors at once.")
     if input().upper() == 'Y':
         motorTestCMD = input().upper()
 
     #loop through each odrive that is connected and configure/calibrate each axis_num.
-    for odrv in odrives:
-        config_motor(odrv, 1)
-        calib_motor(odrv, 1)
-        config_motor(odrv, 2)
-        calib_motor(odrv, 2)
+    #for odrv in odrives:
+        config_motor(odrives[0], 1)
+        config_motor(odrives[0], 2)
+        calib_motor(odrives[0], 1, motorTestCMD)
+        calib_motor(odrives[0], 2, motorTestCMD)
     #YES !
+
+
+#TODO: 10/20/2022 USE MAX'S FILE TO RUN FUNCTIONS 

@@ -41,21 +41,17 @@ if __name__ == "__main__":
 
 
 
-    def config_motor(odrv_num, axis_num):
-
-        
-        #test function -- getting serial number from the located odrive
-        odrvSerNum = str(hex(odrv.serial_number)).upper()
-        print("Serial Number of connected odrive: ",odrvSerNum.replace('0X',''))
-
+    def config_motor(odrv_num, axis_num, shouldClear):
 
         #===================Reset=========================
         #If there were errors in the previous cycle, erase config would clear errors so you could start over
-        try:
-            odrv_num.erase_configuration()
+        if shouldClear:
+            try:
+                odrv_num.erase_configuration()
 
-        except fibre.libfibre.ObjectLostError:
-            pass
+            except fibre.libfibre.ObjectLostError:
+                pass
+
 
         #FIX THIS.
         odrv_num = odrive.find_any()
@@ -63,6 +59,10 @@ if __name__ == "__main__":
         #================================================
 
         axis = getattr(odrv_num, f'axis{axis_num}')
+        
+        #test function -- getting serial number from the located odrive
+        odrvSerNum = str(hex(odrv_num.serial_number)).upper()
+        print("Serial Number of connected odrive: ",odrvSerNum.replace('0X',''))
 
         #=============ODRIVE CONFIGURATION===============
         #Need to be set to true if we are using a psu with a brake resistor
@@ -106,6 +106,8 @@ if __name__ == "__main__":
         #using an encoder with an index pin allows pre-calibration of the encoder and encoder index search
         #ours has index pins(Z) ; can set this to true
         axis.encoder.config.use_index = False
+        #changed this to false, wasnt here before. default was true.
+        axis.encoder.config.use_index_offset = False
         #Changed from true to false got illegalhallstate big surprise.
         #When trying to request closed loop state and set vel = 3 got the following errors
         #MotorError.UNKNOWN_TORQUE and MotorError.UNKNOWN_VOLTAGE_COMMAND
@@ -143,8 +145,7 @@ if __name__ == "__main__":
         except fibre.libfibre.ObjectLostError:
             pass
         print("Manual configuration saved.")
-        #After every save_configuration / erase_configuration / reboot we have to find odrive again.
-        odrv_num = odrive.find_any()
+        
 
 
     def calib_motor(odrv_num, axis_num, testMotor):
@@ -154,7 +155,7 @@ if __name__ == "__main__":
 
         #===============================================================
         #INPUT_MODE_PASSTHROUGH
-        odrv_num.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
+        axis.controller.config.input_mode = 1   #INPUT_MODE_VEL_RAMP
 
         #CONTROL_MODE_VELOCITY_CONTROL
         axis.controller.config.control_mode = 2
@@ -172,12 +173,15 @@ if __name__ == "__main__":
         # to store these values, do motor.config.pre_calibrated = True, as we do below.
         axis.requested_state = AXIS_STATE_MOTOR_CALIBRATION
         # Sleep to allow the motor to finish the calibrate process.
-        time.sleep(15)
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print("t " ,axis.current_state)
+        
         
         # If there was an error during motor calibration, exit and link to error list.
         if axis.motor.error != 0:
             print("Error at motor clibration QUIT NOW")
-            print("hold ctrl")
+            print("hold ctrl  v")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
             # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
             print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
@@ -188,18 +192,28 @@ if __name__ == "__main__":
         #================================ENCODER CALIBRATION===============================
         # This stores motor.config.phase_resistance and motor.config.phase_inductance to the odrive memory.
         logger.debug("Setting motor to precalibrated")
-        odrv_num.axis_num.motor.config.pre_calibrated = True
-        time.sleep(2)
+        axis.motor.config.pre_calibrated = True
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print(axis.current_state)
+        time.sleep(5)
+        print("t " ,axis.current_state)
 
         # Rotate the motor in lockin and calibrate hall polarity
         logger.debug("Calibrating Hall Polarity...")
         axis.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
-        time.sleep(15)
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print(axis.current_state)
+        print(axis.current_state)
+        time.sleep(5)
+        print("t " ,axis.current_state)
 
         # If there was an error during encoder polarity calibration, exit and link to error list.
         if axis.encoder.error != 0:
             print("Error at Calibrating Hall Polarity QUIT NOW")
-            print("hold ctrl")
+            print(axis.encoder.error)
+            print("hold ctrl  v")
             # To regenerate this file, nagivate to the top level of the ODrive repository and run:
             # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
             print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
@@ -209,8 +223,13 @@ if __name__ == "__main__":
         # Rotate the motor for 30s to calibrate hall sensor edge offsets
         # Note: The phase offset is not calibrated at this time, so the map is only relative
         logger.debug("Calibrating Hall Phase...")
-        axis.requested_state = axis_num_STATE_ENCODER_HALL_PHASE_CALIBRATION
-        time.sleep(15)
+        axis.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print(axis.current_state)
+        print(axis.current_state)
+        time.sleep(5)
+        print("t " ,axis.current_state)
 
         # If there was an error during encoder phase calibration, exit and link to error list.
         if axis.encoder.error != 0:
@@ -229,7 +248,13 @@ if __name__ == "__main__":
         # If successful, encoder calibration will make the encoder.is_ready == True
         logger.debug("Calibrating Hall Offset...")
         axis.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-        time.sleep(25)
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print(axis.current_state)
+
+        print(axis.current_state)
+        time.sleep(5)
+        print("t " ,axis.current_state)
 
         # If there was an error during encoder offset calibration, exit and link to error list.
         if axis.encoder.error != 0:
@@ -244,10 +269,16 @@ if __name__ == "__main__":
 
         logger.debug("Setting encoder to precalibrated...")
         axis.encoder.config.pre_calibrated = True
-        time.sleep(2)
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(0.1)
+            print(axis.current_state)
+
+        print(axis.current_state)
+        time.sleep(5)
+        print("t " ,axis.current_state)
 
         logger.debug("trying to save...")
-        odrv.save_configuration()
+        odrv_num.save_configuration()
         logger.debug("saved...")
         
         #==================================================================================
@@ -280,11 +311,14 @@ if __name__ == "__main__":
 
     #loop through each odrive that is connected and configure/calibrate each axis_num.
     #for odrv in odrives:
-        config_motor(odrives[0], 1)
-        config_motor(odrives[0], 2)
-        calib_motor(odrives[0], 1, motorTestCMD)
-        calib_motor(odrives[0], 2, motorTestCMD)
-    #YES !
+    config_motor(odrives[0], 0, True)
+    #After every save_configuration / erase_configuration / reboot we have to find odrive again.
+    odrives[0] = odrive.find_any(serial_number='207937815753')
+    calib_motor(odrives[0], 0, motorTestCMD)
+    config_motor(odrives[0], 1, False)
+    odrives[0] = odrive.find_any()
+    calib_motor(odrives[0], 1, motorTestCMD)
+    #YES 
 
 
 #TODO: 10/20/2022 USE MAX'S FILE TO RUN FUNCTIONS 

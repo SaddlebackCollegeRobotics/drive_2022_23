@@ -278,9 +278,19 @@ if __name__ == "__main__":
         print("t " ,axis.current_state)
 
         logger.debug("trying to save...")
-        odrv_num.save_configuration()
+        # saving the new configuration
+        print("Saving manual configuration and rebooting...")
+        try:
+            odrv_num.save_configuration()
+
+        except fibre.libfibre.ObjectLostError:
+            pass
+        print("Manual configuration saved.")
         logger.debug("saved...")
-        
+
+        odrv_num = odrive.find_any()
+        axis = getattr(odrv_num, f'axis{axis_num}')
+
         #==================================================================================
 
     
@@ -290,27 +300,35 @@ if __name__ == "__main__":
             runMotorChoice = input()
             if runMotorChoice.upper() == 'Y':
                 
-                print("enter int for velocity. 1-10 is fine,\n anything from 10-70 hold the motor still")
-                axis.controller.input_vel = input()
-                print(axis.controller.input_vel)
+                print("enter value for velocity. 1-10 is fine,\n anything from 10-70. Hold the motor still. Enter X to quit..")
+                velVal = input()
+
+                axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+
+                while True:
+                    try:
+                        axis.controller.input_vel = int(velVal)
+                        print("Velocity set to: ",axis.controller.input_vel)
+                        print("Enter a value (hit enter to exit): ")
+                        velVal = input()
+
+                    except ValueError:
+                        axis.requested_state = AXIS_STATE_IDLE
+                        break
+                    
                 
-                print("[Y / N] set to closed loop control? (motor will spin). ")
-                setCLC_cmd = input()
-                if setCLC_cmd.upper() == 'Y':
-                    axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-                    input("press enter to stop...")
-                    axis.requested_state = AXIS_STATE_IDLE
 
         #==================================================================================
 
-    motorTestCMD = 'N'
+    
     logger.debug("Would you like to test each motor individually after each is calibrated[Y], if not just hit enter...")
     logger.debug("Note: You will still be prompted to test all motors at once.")
-    if input().upper() == 'Y':
-        motorTestCMD = input().upper()
+    motorTestCMD = input().upper()
 
+    
     #loop through each odrive that is connected and configure/calibrate each axis_num.
     #for odrv in odrives:
+
     config_motor(odrives[0], 0, True)
     #After every save_configuration / erase_configuration / reboot we have to find odrive again.
     odrives[0] = odrive.find_any(serial_number='207937815753')

@@ -21,9 +21,7 @@ from loguru import logger
 if __name__ == "__main__":
 
     #finding odrive
-    odrv0 = odrive.find_any()
-
-    odrives = [odrv0]
+    odrives = []
 
 
     # #==================================

@@ -19,7 +19,7 @@ def config_motor(odrv_num, axis_num, shouldClear):
 
             odrv = odrive.find_any(serial_number=odrv_num)
             
-        print("Manual configuration erased.")
+            print("Manual configuration erased.")
         #================================================
 
         axis = getattr(odrv, f'axis{axis_num}')

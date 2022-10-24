@@ -11,6 +11,7 @@ from odrive.enums import *
 import fibre.libfibre
 #from enum import IntEnum
 from loguru import logger
+from find_serial import get_all_odrives
 
 
 
@@ -21,7 +22,7 @@ from loguru import logger
 if __name__ == "__main__":
 
     #finding odrive
-    odrives = []
+    odrives = get_all_odrives()
 
 
     # #==================================
@@ -43,47 +44,49 @@ if __name__ == "__main__":
 
         #===================Reset=========================
         #If there were errors in the previous cycle, erase config would clear errors so you could start over
+        odrv = odrive.find_any(serial_number=odrv_num)
+
         if shouldClear:
             try:
-                odrv_num.erase_configuration()
+                odrv.erase_configuration()
 
             except fibre.libfibre.ObjectLostError:
                 pass
 
-
-        #FIX THIS.
-        odrv_num = odrive.find_any()
+            odrv = odrive.find_any(serial_number=odrv_num)
+            
         print("Manual configuration erased.")
         #================================================
 
-        axis = getattr(odrv_num, f'axis{axis_num}')
+        axis = getattr(odrv, f'axis{axis_num}')
         
-        #test function -- getting serial number from the located odrive
-        odrvSerNum = str(hex(odrv_num.serial_number)).upper()
-        print("Serial Number of connected odrive: ",odrvSerNum.replace('0X',''))
+        #test function -- getting vbus_voltage to prove this is a unique odrive
+        vbus_voltage = odrv.vbus_voltage
+        print("Serial Number of connected odrive: ", odrv_num)
+        print("VBUS_voltage of connected odrive: ", vbus_voltage)
 
         #=============ODRIVE CONFIGURATION===============
         #Need to be set to true if we are using a psu with a brake resistor
         logger.debug("using power supply..? [Y/N]")
         PSUChoice = input()
         if PSUChoice.upper() == 'Y':
-            odrv_num.config.enable_brake_resistor = True
+            odrv.config.enable_brake_resistor = True
             #maybe create new if in future if using different resistor (ie not 2ohms)
-            odrv_num.config.brake_resistance = 2.0
+            odrv.config.brake_resistance = 2.0
         else:   
-            odrv_num.config.enable_brake_resistor = False
-            odrv_num.config.brake_resistance = 0.0
+            odrv.config.enable_brake_resistor = False
+            odrv.config.brake_resistance = 0.0
         #Odrivetool says the default value is 2.0 
         #(because the resitor that comes with the odrive is 50w 2ohm)
         #and to set it to default if not using br; look into this further.
         #If we are using a brake resistor change this value to resistor ohms.
 
 
-        odrv_num.config.dc_bus_undervoltage_trip_level = 8.0
-        odrv_num.config.dc_bus_overvoltage_trip_level = 56.0
-        odrv_num.config.dc_max_positive_current = 120.0
-        odrv_num.config.dc_max_negative_current = -20.0
-        odrv_num.config.max_regen_current = 0
+        odrv.config.dc_bus_undervoltage_trip_level = 8.0
+        odrv.config.dc_bus_overvoltage_trip_level = 56.0
+        odrv.config.dc_max_positive_current = 120.0
+        odrv.config.dc_max_negative_current = -20.0
+        odrv.config.max_regen_current = 0
         #================================================
 
         #=============MOTOR CONFIGURATION================
@@ -138,7 +141,7 @@ if __name__ == "__main__":
         # saving the new configuration
         print("Saving manual configuration and rebooting...")
         try:
-            odrv_num.save_configuration()
+            odrv.save_configuration()
 
         except fibre.libfibre.ObjectLostError:
             pass
@@ -149,7 +152,9 @@ if __name__ == "__main__":
     def calib_motor(odrv_num, axis_num, testMotor):
         #=======================================CALIBRATION SEQUENCE==============================================
 
-        axis = getattr(odrv_num, f'axis{axis_num}')
+        odrv = odrive.find_any(serial_number=odrv_num)
+
+        axis = getattr(odrv, f'axis{axis_num}')
 
         #===============================================================
         #INPUT_MODE_PASSTHROUGH
@@ -279,15 +284,15 @@ if __name__ == "__main__":
         # saving the new configuration
         print("Saving manual configuration and rebooting...")
         try:
-            odrv_num.save_configuration()
+            odrv.save_configuration()
 
         except fibre.libfibre.ObjectLostError:
             pass
         print("Manual configuration saved.")
         logger.debug("saved...")
 
-        odrv_num = odrive.find_any()
-        axis = getattr(odrv_num, f'axis{axis_num}')
+        odrv = odrive.find_any(serial_number=odrv_num)
+        axis = getattr(odrv, f'axis{axis_num}')
 
         #==================================================================================
 
@@ -325,16 +330,10 @@ if __name__ == "__main__":
 
     
     #loop through each odrive that is connected and configure/calibrate each axis_num.
-    #for odrv in odrives:
+    for odrvSerial in odrives:
+        config_motor(odrvSerial, 0, True)
+        calib_motor(odrvSerial, 0, motorTestCMD)
 
-    config_motor(odrives[0], 0, True)
-    #After every save_configuration / erase_configuration / reboot we have to find odrive again.
-    odrives[0] = odrive.find_any(serial_number='207937815753')
-    calib_motor(odrives[0], 0, motorTestCMD)
-    config_motor(odrives[0], 1, False)
-    odrives[0] = odrive.find_any()
-    calib_motor(odrives[0], 1, motorTestCMD)
-    #YES 
+        config_motor(odrvSerial, 1, False)
+        calib_motor(odrvSerial, 1, motorTestCMD)
 
-
-#TODO: 10/20/2022 USE MAX'S FILE TO RUN FUNCTIONS 

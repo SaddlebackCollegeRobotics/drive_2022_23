@@ -23,7 +23,7 @@ def get_all_odrives():
 
     odrivesSerNum = []
 
-    usbDevices = str(subprocess.run('lsusb', capture_output=True).stdout).split('\\n')
+    usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
 
     for device in usbDevices:
         if "ODrive" in device:

@@ -20,7 +20,10 @@ import subprocess
 #  the serial numbers. This is turned into a list and returned.
 #==========================================================
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+
+    
+def get_all_odrives():
 
     odrivesSerNum = []
 
@@ -31,22 +34,6 @@ if __name__ == "__main__":
             print(device)
             odrivesSerNum.append(device[28:].strip())
             odrivesSerNum = list(filter(None, odrivesSerNum))
-            #iSerial                 3 366B385A3030
-        # if "Serial Number:" in device:
-        #     serialNumber = device.split("Serial Number: ")[1]
-        #     odrivesSerNum.append(serialNumber)
-   
-    print(odrivesSerNum)
-#def get_all_odrives():
 
-    # odrivesSerNum = []
-    # usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
-
-    # for device in usbDevices:
-
-    #     if "Serial Number:" in device:
-    #         serialNumber = device.split("Serial Number: ")[1]
-    #         odrivesSerNum.append(serialNumber)
-   
-    # return odrivesSerNum
+    return odrivesSerNum
         

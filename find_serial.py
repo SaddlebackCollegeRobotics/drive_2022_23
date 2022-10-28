@@ -19,6 +19,9 @@ import subprocess
 #  uses lsusb in the terminal, captures the output, and parses through to obtain 
 #  the serial numbers. This is turned into a list and returned.
 #==========================================================
+
+
+    
 def get_all_odrives():
 
     odrivesSerNum = []
@@ -26,10 +29,11 @@ def get_all_odrives():
     usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
 
     for device in usbDevices:
-        if "ODrive" in device:
-            serialNumber = device.split("Serial: ")[1]
-            odrivesSerNum.append(serialNumber)
+        if "Serial" in device:
+            print(device)
+            odrivesSerNum.append(device[28:].strip())
+            odrivesSerNum = list(filter(None, odrivesSerNum))
 
     return odrivesSerNum
+
         
-        #FUUUU!!!

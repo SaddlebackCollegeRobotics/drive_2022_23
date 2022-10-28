@@ -20,7 +20,6 @@ import subprocess
 #  the serial numbers. This is turned into a list and returned.
 #==========================================================
 
-#if __name__ == "__main__":
 
     
 def get_all_odrives():
@@ -36,4 +35,5 @@ def get_all_odrives():
             odrivesSerNum = list(filter(None, odrivesSerNum))
 
     return odrivesSerNum
+
         

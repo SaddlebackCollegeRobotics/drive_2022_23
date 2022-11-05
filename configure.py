@@ -111,4 +111,3 @@ def config_motor(odrv_num, axis_num, shouldClear):
             pass
         print("Manual configuration saved.")
         
-        #stupid

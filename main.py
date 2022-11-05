@@ -28,5 +28,3 @@ if __name__ == "__main__":
 
         config_motor(odrvSerial, 1, False)
         calib_motor(odrvSerial, 1, motorTestCMD)
-
-#I hate you

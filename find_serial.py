@@ -7,6 +7,7 @@ import subprocess
 #  during calibration the motor that moves jumps to a different odrive,
 #  which doesn't allow proper reductive testing.
 #
+# :)
 #
 # The approach is to use the serial numbers of the odrives so that
 #  the find_any() function singles out the selected odrive and connects

@@ -1,7 +1,7 @@
 # Gamepad Input API
 A wrapper for Pygame's joystick module
 <br>
-Author: Cameron Rosenthal
+Author: Cameron Rosenthal @Supernova1114
 <br>
 
 Pygame: https://github.com/pygame/pygame

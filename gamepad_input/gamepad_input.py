@@ -75,10 +75,14 @@ def parseGamepadLayout(gamepadName: str):
     return configFound, gamepadLayout
 
 
+# Get gamepad layout from dictionary
+def getGamepadLayout(instanceID: int):
+    return gamepadDict[instanceID][1]
+
+
 # Get axis tuples (example: left stick (x, y), right stick (x, y), triggers (l2, r2))
 def getAxisGroup(gamepad, axis_1: int, axis_2: int):
-
-    layout = gamepadDict[gamepad.get_instance_id()][1]
+    layout = getGamepadLayout(gamepad.get_instance_id())
     return gamepad.get_axis(layout[axis_1]), gamepad.get_axis(layout[axis_2])
 
 
@@ -107,14 +111,12 @@ def getRightStick(gamepad, deadzone: float):
 
 # Get gamepad hat tuple (x,y)
 def getHat(gamepad):
-    layout = gamepadDict[gamepad.get_instance_id()][1]
-    return gamepad.get_hat(layout[17])
+    return gamepad.get_hat(getGamepadLayout(gamepad.get_instance_id())[17])
 
 
 # Tells if a button is pressed or not
 def getButtonValue(gamepad, buttonIndex: int):
-    layout = gamepadDict[gamepad.get_instance_id()][1]
-    return bool(gamepad.get_button(layout[buttonIndex]) == 1)
+    return bool(gamepad.get_button(getGamepadLayout(gamepad.get_instance_id())[buttonIndex]) == 1)
 
 
 # Handle new gamepad connections
@@ -149,7 +151,7 @@ def onGamepadRemoved(event):
 def onButtonEvent(event, callbackList):
 
     # Grab gamepad layout from dictionary
-    layout = gamepadDict[event.instance_id][1]
+    layout = getGamepadLayout(event.instance_id)
 
     # Call function corresponding to button pressed
     for button, callback in zip (layout, callbackList):
@@ -162,7 +164,7 @@ def onButtonEvent(event, callbackList):
 def onHatMotion(event, callbackList):
     
     # Get gamepad hat
-    layout = gamepadDict[event.instance_id][1]
+    layout = getGamepadLayout(event.instance_id)
     hat = gamepadDict[event.instance_id][0].get_hat(layout[17])
 
     # Handle X axis

@@ -115,6 +115,7 @@ def getHat(gamepad):
 
 
 # Tells if a button is pressed or not
+# Button index corresponds to order of button layout in config file
 def getButtonValue(gamepad, buttonIndex: int):
     return bool(gamepad.get_button(getGamepadLayout(gamepad.get_instance_id())[buttonIndex]) == 1)
 

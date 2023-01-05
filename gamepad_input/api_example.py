@@ -89,6 +89,9 @@ def hatCentered():
 # Run the program
 if __name__ == "__main__":
 
+    # Set config file to use to lookup gamepad layouts. Default path is "gamepads.config"
+    gamepad_input.setConfigFile("gamepads.config")
+
     # Set button callbacks
     buttonDownEvents = [north, west, south, east, share, options, home, l1, r1, l3, r3]
     buttonUpEvents = [northUp, westUp, southUp, eastUp, shareUp, optionsUp, homeUp, l1Up, r1Up, l3Up, r3Up]
@@ -109,7 +112,7 @@ if __name__ == "__main__":
     # How to get gamepad object and read axis values
     axis_deadzone = 0.3 # Deadzone is 0 to 1
     # Note: axis value will be 0 until you move past the deadzone
-    
+
     while True:
         time.sleep(0.5)
         

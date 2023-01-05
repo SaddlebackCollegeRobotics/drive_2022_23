@@ -4,7 +4,6 @@
 import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide" # Hide pygame welcome message
 import pygame
-import fileinput
 import threading
 
 
@@ -12,6 +11,15 @@ import threading
 pygame.init()
 gamepadDict = {}
 loop = True
+
+# Set default config file path
+configFile = "gamepads.config"
+
+
+# Set new config file path
+def setConfigFile(path: str):
+    global configFile
+    configFile = path
 
 
 # Quit program
@@ -54,8 +62,15 @@ def parseGamepadLayout(gamepadName: str):
     
     gamepadLayout = []
     configFound = False
-    file = fileinput.input(files ='gamepads.config')
 
+    # Open config file
+    try:
+        file = open(configFile)
+    except:
+        print("Error: Config file not found")
+        return None
+
+    # Parse config file
     for line in file:
 
         if (line == '\n'):
@@ -72,13 +87,17 @@ def parseGamepadLayout(gamepadName: str):
                 gamepadLayout.append(int(line.split(':')[1].strip()))
 
     file.close()
-    return configFound, gamepadLayout
+
+    if (not configFound):
+        print("Error: Gamepad config not found")
+    
+    return gamepadLayout if configFound else None
 
 
 # Get gamepad layout from dictionary
 def getGamepadLayout(instanceID: int):
     return gamepadDict[instanceID][1]
-
+    
 
 # Get axis tuples (example: left stick (x, y), right stick (x, y), triggers (l2, r2))
 def getAxisGroup(gamepad, axis_1: int, axis_2: int):
@@ -120,24 +139,26 @@ def getButtonValue(gamepad, buttonIndex: int):
     return bool(gamepad.get_button(getGamepadLayout(gamepad.get_instance_id())[buttonIndex]) == 1)
 
 
+# Rumble gamepad
+# TODO - FIX ASNDLSNLSANLDNSLNSN
+def rumble(gamepad):
+    gamepad.rumble(0, 0.7, 500)
+
+
 # Handle new gamepad connections
 def onGamepadConnected(event):
 
     gamepad = getGamepad(event.device_index)
 
     # Get controller layout from config file
-    (configFound, buttonLayout) = parseGamepadLayout(gamepad.get_name())
+    buttonLayout = parseGamepadLayout(gamepad.get_name())
 
     # Add gamepad and button layout to dictionary
-    if (configFound):
+    if (buttonLayout is not None):
         gamepadDict[gamepad.get_instance_id()] = (gamepad, buttonLayout)
-        
-    else:
-        print("Controller Config Not Found!")
-    
-    print(f"Gamepad {gamepad.get_instance_id()} Connected", end = " | ")
-    print(gamepad.get_name())
 
+    print(f"Gamepad {gamepad.get_instance_id()} Connected", end = " | ")
+    print(gamepad.get_name())    
 
 # Handle gamepad disconnections
 def onGamepadRemoved(event):

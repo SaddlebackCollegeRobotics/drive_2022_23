@@ -5,15 +5,24 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide" # Hide pygame welcome message
 import pygame
 import threading
+import signal
 
 
-# Init
+# Global variables and init
 pygame.init()
 gamepadDict = {}
 loop = True
+thread = None
 
-# Set default config file path
-configFile = "gamepads.config"
+# Set default config file path (gamepads.config in same directory as this file)
+configFile = os.path.dirname(os.path.realpath(__file__)) + "/gamepads.config"
+
+
+# Signal handler for Ctrl+C
+def signalHandler(signal, frame):
+    quit()
+
+signal.signal(signal.SIGINT, signalHandler)
 
 
 # Set new config file path
@@ -26,34 +35,35 @@ def setConfigFile(path: str):
 def quit():
     global loop
     loop = False
+
+    # Wait for thread to finish
+    if (thread != None):
+        thread.join()
+
     pygame.quit()
-    print("Program Terminated")
+    print("\nGamepad Input Terminated Safely\n")
+    exit(0)
 
 
 # Get gamepad object
 def getGamepad(index: int):
-    if (pygame.joystick.get_count() > 0):
-        return pygame.joystick.Joystick(index)
-    else:
-        return None
+    values = list(gamepadDict.values())
+    return values[index][0] if index < values.__len__() else None
 
 
-# Apply a deadzone to an axis
+# Apply a deadzone to an axis (value is zero until past deadzone)
 def applyDeadzone(value: float, deadzone: float):
-    if (value < deadzone and value > -deadzone):
-        return 0
-    else:
-        return value
+    return 0 if (value < deadzone and value > -deadzone) else value
 
 
 # Get gamepad count
 def getGamepadCount():
-    return pygame.joystick.get_count()
+    return gamepadDict.__len__()
 
 
 # Call function if not None
 def tryCallback(callback):
-    if (callback is not None):
+    if (callback != None):
         callback()
 
 
@@ -96,77 +106,107 @@ def parseGamepadLayout(gamepadName: str):
 
 # Get gamepad layout from dictionary
 def getGamepadLayout(instanceID: int):
-    return gamepadDict[instanceID][1]
+    return gamepadDict[instanceID][1] if instanceID in gamepadDict.keys() else None
     
 
 # Get axis tuples (example: left stick (x, y), right stick (x, y), triggers (l2, r2))
 def getAxisGroup(gamepad, axis_1: int, axis_2: int):
+
     layout = getGamepadLayout(gamepad.get_instance_id())
-    return gamepad.get_axis(layout[axis_1]), gamepad.get_axis(layout[axis_2])
+
+    if (layout != None):
+        return gamepad.get_axis(layout[axis_1]), gamepad.get_axis(layout[axis_2])
+    else:
+        return None
 
 
 # Get gamepad left and right triggers (l, r)
 def getTriggers(gamepad, deadzone: float):
-    (x, y) = getAxisGroup(gamepad, 11, 12)
-    
+
+    axisGroup = getAxisGroup(gamepad, 11, 12)
+    if (axisGroup == None):
+        return (0, 0)
+
     # Convert axis values from -1 to 1 to 0 to 2, and let deadzone be 0 to 1
-    x = (x + 1) / 2
-    y = (y + 1) / 2
+    x = (axisGroup[0] + 1) / 2
+    y = (axisGroup[1] + 1) / 2
 
     return applyDeadzone(x, deadzone), applyDeadzone(y, deadzone)
-    
+
 
 # Get gamepad left stick tuple (x,y)
 def getLeftStick(gamepad, deadzone: float):
-    (x, y) = getAxisGroup(gamepad, 13, 14)
-    return applyDeadzone(x, deadzone), applyDeadzone(y, deadzone)
 
+    axisGroup = getAxisGroup(gamepad, 13, 14)
+    if (axisGroup == None):
+        return (0, 0)
+
+    return applyDeadzone(axisGroup[0], deadzone), applyDeadzone(axisGroup[1], deadzone)
+    
 
 # Get gamepad right stick tuple (x,y)
 def getRightStick(gamepad, deadzone: float):
-    (x, y) = getAxisGroup(gamepad, 15, 16)
-    return applyDeadzone(x, deadzone), applyDeadzone(y, deadzone)
 
+    axisGroup = getAxisGroup(gamepad, 15, 16)
+    if (axisGroup == None):
+        return (0, 0)
+
+    return applyDeadzone(axisGroup[0], deadzone), applyDeadzone(axisGroup[1], deadzone)
+    
 
 # Get gamepad hat tuple (x,y)
 def getHat(gamepad):
-    return gamepad.get_hat(getGamepadLayout(gamepad.get_instance_id())[17])
+    layout = getGamepadLayout(gamepad.get_instance_id())
+    return (0, 0) if layout == None else gamepad.get_hat(layout[17])
 
 
 # Tells if a button is pressed or not
 # Button index corresponds to order of button layout in config file
 def getButtonValue(gamepad, buttonIndex: int):
-    return bool(gamepad.get_button(getGamepadLayout(gamepad.get_instance_id())[buttonIndex]) == 1)
+    layout = getGamepadLayout(gamepad.get_instance_id())
+    return False if layout == None else bool(gamepad.get_button(layout[buttonIndex]) == 1) 
 
 
-# Rumble gamepad
-# TODO - FIX ASNDLSNLSANLDNSLNSN
-def rumble(gamepad):
-    gamepad.rumble(0, 0.7, 500)
+# Rumble all gamepads
+# Low frequency is the heavy rumble (0 to 1)
+# High frequency is the light rumble (0 to 1)
+def rumbleAll(low_frequency: float, high_frequency: float, duration: int):
+    for gamepad in gamepadDict.values():
+        gamepad[0].rumble(low_frequency, high_frequency, duration)
+
+
+# Stop rumble on all gamepads
+def stopRumbleAll():
+    for gamepad in gamepadDict.values():
+        gamepad[0].stop_rumble()
 
 
 # Handle new gamepad connections
 def onGamepadConnected(event):
 
-    gamepad = getGamepad(event.device_index)
+    # Get gamepad from pygame
+    gamepad = pygame.joystick.Joystick(event.device_index)
 
     # Get controller layout from config file
     buttonLayout = parseGamepadLayout(gamepad.get_name())
 
     # Add gamepad and button layout to dictionary
-    if (buttonLayout is not None):
+    if (buttonLayout != None):
         gamepadDict[gamepad.get_instance_id()] = (gamepad, buttonLayout)
 
     print(f"Gamepad {gamepad.get_instance_id()} Connected", end = " | ")
     print(gamepad.get_name())    
 
+
 # Handle gamepad disconnections
 def onGamepadRemoved(event):
 
-    if (event.instance_id in gamepadDict.keys()):
-        del gamepadDict[event.instance_id]
+    id = event.instance_id
+
+    if (id in gamepadDict.keys()):
+        del gamepadDict[id]
     
-    print(f"Gamepad {event.instance_id} Disconnected")
+    print(f"Gamepad {id} Disconnected")
 
 
 # Handle gamepad button events
@@ -208,7 +248,7 @@ def onHatMotion(event, callbackList):
 
 
 # Processes gamepad events and grants button callbacks
-def run_event_loop(onButtonDownEvents = None, onButtonUpEvents = None, hatEvents = None):
+def run_event_loop(onButtonDownEvents = None, onButtonUpEvents = None, hatEvents = None, connectionEvents = None):
 
     def async_wrapper():
     
@@ -241,11 +281,16 @@ def run_event_loop(onButtonDownEvents = None, onButtonUpEvents = None, hatEvents
                     # Handle new gamepad connections
                     case pygame.JOYDEVICEADDED: 
                         onGamepadConnected(event)
+                        if (connectionEvents != None):
+                            tryCallback(connectionEvents[0])
 
                     # Handle gamepad disconnections
                     case pygame.JOYDEVICEREMOVED: 
                         onGamepadRemoved(event)
+                        if (connectionEvents != None):
+                            tryCallback(connectionEvents[1])
 
 
+    global thread
     thread = threading.Thread(target=async_wrapper)
     thread.start()

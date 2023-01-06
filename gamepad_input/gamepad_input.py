@@ -123,6 +123,9 @@ def getAxisGroup(gamepad, axis_1: int, axis_2: int):
 # Get gamepad left and right triggers (l, r)
 def getTriggers(gamepad, deadzone: float):
 
+    if (gamepad == None):
+        return (0, 0)
+
     axisGroup = getAxisGroup(gamepad, 11, 12)
     if (axisGroup == None):
         return (0, 0)
@@ -137,6 +140,9 @@ def getTriggers(gamepad, deadzone: float):
 # Get gamepad left stick tuple (x,y)
 def getLeftStick(gamepad, deadzone: float):
 
+    if (gamepad == None):
+        return (0, 0)
+
     axisGroup = getAxisGroup(gamepad, 13, 14)
     if (axisGroup == None):
         return (0, 0)
@@ -147,6 +153,9 @@ def getLeftStick(gamepad, deadzone: float):
 # Get gamepad right stick tuple (x,y)
 def getRightStick(gamepad, deadzone: float):
 
+    if (gamepad == None):
+        return (0, 0)
+
     axisGroup = getAxisGroup(gamepad, 15, 16)
     if (axisGroup == None):
         return (0, 0)
@@ -156,6 +165,10 @@ def getRightStick(gamepad, deadzone: float):
 
 # Get gamepad hat tuple (x,y)
 def getHat(gamepad):
+
+    if (gamepad == None):
+        return (0, 0)
+
     layout = getGamepadLayout(gamepad.get_instance_id())
     return (0, 0) if layout == None else gamepad.get_hat(layout[17])
 
@@ -163,6 +176,10 @@ def getHat(gamepad):
 # Tells if a button is pressed or not
 # Button index corresponds to order of button layout in config file
 def getButtonValue(gamepad, buttonIndex: int):
+
+    if (gamepad == None):
+        return False
+
     layout = getGamepadLayout(gamepad.get_instance_id())
     return False if layout == None else bool(gamepad.get_button(layout[buttonIndex]) == 1) 
 

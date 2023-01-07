@@ -7,7 +7,6 @@ import subprocess
 #  during calibration the motor that moves jumps to a different odrive,
 #  which doesn't allow proper reductive testing.
 #
-# :)
 #
 # The approach is to use the serial numbers of the odrives so that
 #  the find_any() function singles out the selected odrive and connects
@@ -31,7 +30,6 @@ def get_all_odrives():
 
     for device in usbDevices:
         if "Serial" in device:
-            print(device)
             odrivesSerNum.append(device[28:].strip())
             odrivesSerNum = list(filter(None, odrivesSerNum))
 

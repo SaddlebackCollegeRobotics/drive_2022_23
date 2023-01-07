@@ -4,7 +4,7 @@ from fibre.libfibre import ObjectLostError
 from loguru import logger
 
 
-def config_motor(odrv_num, axis_num, shouldClear):
+def config_motor(odrv_num, axis_num, shouldClear, PSUChoice):
 
         #===================Reset=========================
         #If there were errors in the previous cycle, erase config would clear errors so you could start over
@@ -19,7 +19,7 @@ def config_motor(odrv_num, axis_num, shouldClear):
 
             odrv = odrive.find_any(serial_number=odrv_num)
             
-            print("Manual configuration erased.")
+            print("Erased Previous Configuration... 🗑️")
         #================================================
 
         axis = getattr(odrv, f'axis{axis_num}')
@@ -31,9 +31,8 @@ def config_motor(odrv_num, axis_num, shouldClear):
 
         #=============ODRIVE CONFIGURATION===============
         #Need to be set to true if we are using a psu with a brake resistor
-        logger.debug("using power supply..? [Y/N]")
-        PSUChoice = input()
-        if PSUChoice.upper() == 'Y':
+        
+        if PSUChoice:
             odrv.config.enable_brake_resistor = True
             #maybe create new if in future if using different resistor (eg not 2ohms)
             odrv.config.brake_resistance = 2.0
@@ -111,3 +110,4 @@ def config_motor(odrv_num, axis_num, shouldClear):
             pass
         print("Manual configuration saved.")
         
+        #stupid

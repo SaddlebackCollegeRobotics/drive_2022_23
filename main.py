@@ -18,7 +18,7 @@ def get_all_odrives():
 
         # This will pull any device with a serial number 
         if odriveFound and "Serial" in usbDevices:
-            odrivesSerialList.append(device[28:].strip())
+            odrivesSerialList.append(line[28:].strip())
             odrivesSerialList = list(filter(None, odrivesSerialList))
             odriveFound = False
 

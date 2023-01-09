@@ -6,16 +6,23 @@ import subprocess
 
 def get_all_odrives():
 
-    odrivesSerNum = []
+    odrivesSerialList = []
 
     usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
 
-    for device in usbDevices:
-        if "Serial" in device:
-            odrivesSerNum.append(device[28:].strip())
-            odrivesSerNum = list(filter(None, odrivesSerNum))
+    odriveFound = False
+    for line in usbDevices:
 
-    return odrivesSerNum
+        if "Odrive" in usbDevices:
+            odriveFound = True
+
+        # This will pull any device with a serial number 
+        if odriveFound and "Serial" in usbDevices:
+            odrivesSerialList.append(device[28:].strip())
+            odrivesSerialList = list(filter(None, odrivesSerialList))
+            odriveFound = False
+
+    return odrivesSerialList
 
 
 
@@ -209,6 +216,7 @@ def eventHandler(odrv_0, odrv_1=None):
 
 if __name__ == "__main__":
     odrives = get_all_odrives()
+    
     odrv0 = odrives[0]
     odrv1 = odrives[1]
 

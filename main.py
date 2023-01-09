@@ -1,13 +1,125 @@
 from src.odrives.calibrate import *
-from src.controller.callbacks import *
 import src.controller.gamepad_input as gmi
+import subprocess
+
+
+
+def get_all_odrives():
+
+    odrivesSerNum = []
+
+    usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
+
+    for device in usbDevices:
+        if "Serial" in device:
+            odrivesSerNum.append(device[28:].strip())
+            odrivesSerNum = list(filter(None, odrivesSerNum))
+
+    return odrivesSerNum
+
+
+
+def north():
+    print("North")
+
+def west():
+    print("West")
+
+def south():
+    print("South")
+    gmi.rumbleAll(0, 0.3, 100)
+
+def east():
+    print("East")
+
+def share():
+    print("Share")
+
+def options():
+    print("Options")
+
+def home():
+    print("Home")
+
+def l1():
+    print("L1")
+
+def r1():
+    print("R1")
+
+def l3():
+    print("L3")
+
+def r3():
+    print("R3")
+
+
+# Button UP callbacks
+def northUp():
+    print("North Up")
+
+def westUp():
+    print("West Up")
+
+def southUp():
+    print("South Up")
+
+def eastUp():
+    print("East Up")
+
+def shareUp():
+    print("Share Up")
+
+def optionsUp():
+    print("Options Up")
+
+def homeUp():
+    print("Home Up")
+
+def l1Up():
+    print("L1 Up")
+
+def r1Up():
+    print("R1 Up")
+
+def l3Up():
+    print("L3 Up")
+
+def r3Up():
+    print("R3 Up")
+
+
+# Hat callbacks
+def hatNorth():
+    print("Hat North")
+
+def hatSouth():
+    print("Hat South")
+
+def hatWest():
+    print("Hat West")
+
+def hatEast():
+    print("Hat East")
+
+def hatCentered():
+    print("Hat Centered")
+
+
+# Connection callbacks
+def onGamepadConnect():
+    ...
+
+def onGamepadDisconnect():
+    ...
+
 
 
 AXIS_DEADZONE = 0.3 # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
 
 
-def eventHandler(odrv_0, odrv_1):
+def eventHandler(odrv_0, odrv_1=None):
     buttonDownEvents = [
         north, west, south, east,
         share, options, home,                       
@@ -27,7 +139,7 @@ def eventHandler(odrv_0, odrv_1):
 
 
     while True:
-        gp = gmi.GamepadInput(0)                            # Get gamepad object
+        gp = gmi.getGamepad(0)                            # Get gamepad object
 
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
@@ -49,17 +161,18 @@ def eventHandler(odrv_0, odrv_1):
             odrv1.axis0.controller.input_vel = int(ls_y * 10)
             odrv1.axis1.controller.input_vel = int(ls_y * 10)
 
+
         # Right Stick, Left/Right Movement
-        if rs_x > 0:
-            odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv1.axis0.controller.input_vel += int(rs_x * 10)
-            odrv1.axis1.controller.input_vel += int(rs_x * 10)
-        elif rs_x < 0:
-            odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv0.axis0.controller.input_vel += int(rs_x * 10)
-            odrv0.axis1.controller.input_vel += int(rs_x * 10)
+        # if rs_x > 0 and odrv1:
+        #     odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        #     odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        #     odrv1.axis0.controller.input_vel += int(rs_x * 10)
+        #     odrv1.axis1.controller.input_vel += int(rs_x * 10)
+        # elif rs_x < 0:
+        #     odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        #     odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        #     odrv0.axis0.controller.input_vel += int(rs_x * 10)
+        #     odrv0.axis1.controller.input_vel += int(rs_x * 10)
 
 
 # ====================================================================================================

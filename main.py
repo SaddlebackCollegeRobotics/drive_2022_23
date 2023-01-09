@@ -138,6 +138,9 @@ def eventHandler(odrv_0, odrv_1=None):
     odrv1 = odrive.find_any(serial_number=odrv_1)       # Get odrive object
 
 
+    speed = 10
+
+
     while True:
         gp = gmi.getGamepad(0)                            # Get gamepad object
 
@@ -150,16 +153,16 @@ def eventHandler(odrv_0, odrv_1=None):
             ...
 
         # Left Stick, Forward/Backward Movement
-        if ls_y != 0:
+        if l2 > 0:
             odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv0.axis0.controller.input_vel = int(ls_y * 10)
-            odrv0.axis1.controller.input_vel = int(ls_y * 10)
+            odrv0.axis0.controller.input_vel = int(ls_y * speed)
+            odrv0.axis1.controller.input_vel = int(ls_y * speed)
 
             odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv1.axis0.controller.input_vel = int(ls_y * 10)
-            odrv1.axis1.controller.input_vel = int(ls_y * 10)
+            odrv1.axis0.controller.input_vel = int(ls_y * speed)
+            odrv1.axis1.controller.input_vel = int(ls_y * speed)
 
 
         # Right Stick, Left/Right Movement
@@ -177,10 +180,10 @@ def eventHandler(odrv_0, odrv_1=None):
 
 # ====================================================================================================
         # TODO: For increasing/decreasing speed
-        if l2 > 0:
-            print("L2")
-        if r2 > 0:
-            print("R2")
+        # if l2 > 0:
+        #     print("L2")
+        # if r2 > 0:
+        #     print("R2")
 
         # TODO: Arm control
         # TODO: More optimal way to do this?
@@ -189,11 +192,18 @@ def eventHandler(odrv_0, odrv_1=None):
 
 
         # Stop all motors if no analog input
-        if ls_y and rs_x == 0:
+        if r2 > 0:
             odrv0.axis0.requested_state = AXIS_STATE_IDLE
             odrv0.axis1.requested_state = AXIS_STATE_IDLE
             odrv1.axis0.requested_state = AXIS_STATE_IDLE
             odrv1.axis1.requested_state = AXIS_STATE_IDLE
+
+        if hat_x < 0:
+            speed -= 5
+            print("Current speed: ", speed)
+        if hat_x > 0:
+            speed += 5
+            print("Current speed: ", speed)
 
 
 

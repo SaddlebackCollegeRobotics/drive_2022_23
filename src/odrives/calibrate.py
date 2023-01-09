@@ -240,7 +240,7 @@ def calib_motor(odrv_num, axis_num):
 
 
 def calibrate_all_motors(odrv0, odrv1):
-    print("Odrive 0: ", odrv0, "Odrive 1: ", odrv1)
+    print("Odrive 0: ", odrv0, "\nOdrive 1: ", odrv1, "\n\n\n")
     
     config_motor(odrv0, 0, True, False)
     config_motor(odrv0, 1, False, False)
@@ -283,3 +283,4 @@ def calibrate_all_motors(odrv0, odrv1):
     t11.join()
 
     print("all threads done 😎️ 😎️ 😎️ 😎️")
+    print("\n\n\nBEGINNING DRIVE CONTROL\n\n\n")

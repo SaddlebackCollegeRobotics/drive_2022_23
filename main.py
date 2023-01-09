@@ -8,18 +8,22 @@ def get_all_odrives():
 
     odrivesSerialList = []
 
+    # This will pull all devices connected to the computer
     usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
 
     odriveFound = False
+
+    # This will iterate line by line through the usbDevices[]
     for line in usbDevices:
 
-        if "Odrive" in usbDevices:
+        if "ODrive" in line:
             odriveFound = True
+            print(line)
 
         # This will pull any device with a serial number 
-        if odriveFound and "Serial" in usbDevices:
+        if odriveFound and "Serial" in line:
             odrivesSerialList.append(line[28:].strip())
-            odrivesSerialList = list(filter(None, odrivesSerialList))
+            #odrivesSerialList = list(filter(None, odrivesSerialList))
             odriveFound = False
 
     return odrivesSerialList

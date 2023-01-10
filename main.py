@@ -145,15 +145,14 @@ def eventHandler(odrv_0, odrv_1=None):
     connectionEvents = [onGamepadConnect, onGamepadDisconnect]                          # Set connection callbacks
     gmi.run_event_loop(buttonDownEvents, buttonUpEvents, hatEvents, connectionEvents)   # Async loop to handle gamepad button events
 
-    odrv0 = odrive.find_any(serial_number=odrv_0)       # Get odrive object
-    odrv1 = odrive.find_any(serial_number=odrv_1)       # Get odrive object
-
-
     speed = 10
 
-
     while True:
-        gp = gmi.getGamepad(0)                            # Get gamepad object
+        odrv0 = odrive.find_any(serial_number=odrv_0)       # Get odrive object
+        if odrv_1:
+            odrv1 = odrive.find_any(serial_number=odrv_1)   # Get odrive object
+
+        gp = gmi.getGamepad(0)                              # Get gamepad object
 
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
@@ -164,18 +163,34 @@ def eventHandler(odrv_0, odrv_1=None):
             ...
 
         # Left Stick, Forward/Backward Movement
-        if l2 > 0:
+        if l2 > 0 and odrv_1:
+            print("Left Stick: ", ls_x, ls_y)
             odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv0.axis0.controller.input_vel = int(ls_y * speed)
             odrv0.axis1.controller.input_vel = int(ls_y * speed)
-
             odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv1.axis0.controller.input_vel = int(ls_y * speed)
             odrv1.axis1.controller.input_vel = int(ls_y * speed)
 
+        # Stop all motors if no analog input
+        if r2 > 0 and odrv_1:
+            odrv0.axis0.requested_state = AXIS_STATE_IDLE
+            odrv0.axis1.requested_state = AXIS_STATE_IDLE
+            odrv1.axis0.requested_state = AXIS_STATE_IDLE
+            odrv1.axis1.requested_state = AXIS_STATE_IDLE
 
+        # Ramp up input
+        if hat_x < 0 and speed != -20:
+            speed -= 5
+            print("Current speed: ", speed)
+        if hat_x > 0 and speed != 20:
+            speed += 5
+            print("Current speed: ", speed)
+
+
+# ====================================================================================================
         # Right Stick, Left/Right Movement
         # if rs_x > 0 and odrv1:
         #     odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
@@ -188,9 +203,6 @@ def eventHandler(odrv_0, odrv_1=None):
         #     odrv0.axis0.controller.input_vel += int(rs_x * 10)
         #     odrv0.axis1.controller.input_vel += int(rs_x * 10)
 
-
-# ====================================================================================================
-        # TODO: For increasing/decreasing speed
         # if l2 > 0:
         #     print("L2")
         # if r2 > 0:
@@ -202,27 +214,14 @@ def eventHandler(odrv_0, odrv_1=None):
 # ====================================================================================================
 
 
-        # Stop all motors if no analog input
-        if r2 > 0:
-            odrv0.axis0.requested_state = AXIS_STATE_IDLE
-            odrv0.axis1.requested_state = AXIS_STATE_IDLE
-            odrv1.axis0.requested_state = AXIS_STATE_IDLE
-            odrv1.axis1.requested_state = AXIS_STATE_IDLE
-
-        if hat_x < 0:
-            speed -= 5
-            print("Current speed: ", speed)
-        if hat_x > 0:
-            speed += 5
-            print("Current speed: ", speed)
-
 
 
 if __name__ == "__main__":
     odrives = get_all_odrives()
-    
-    odrv0 = odrives[0]
-    odrv1 = odrives[1]
+    # Odrive 0:  366B385A3030 
+    # Odrive 1:  365F385E3030
+    odrv0 = '366B385A3030' # odrives[0]
+    odrv1 = '365F385E3030' # odrives[1]
 
     calibrate_all_motors(odrv0, odrv1)
     eventHandler(odrv0, odrv1)

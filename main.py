@@ -188,6 +188,7 @@ def eventHandler(odrv_0, odrv_1=None):
         if hat_x > 0 and speed != 20:
             speed += 5
             print("Current speed: ", speed)
+            
 
 
 # ====================================================================================================
@@ -220,9 +221,9 @@ if __name__ == "__main__":
     odrives = get_all_odrives()
     # Odrive 0:  366B385A3030 
     # Odrive 1:  365F385E3030
-    odrv0 = '366B385A3030' # odrives[0]
-    odrv1 = '365F385E3030' # odrives[1]
+    odrv0 = odrives[0]
+    odrv1 = odrives[1]
 
     calibrate_all_motors(odrv0, odrv1)
-    eventHandler(odrv0, odrv1)
+    eventHandler(odrv_0=odrv0, odrv_1=odrv1)
     

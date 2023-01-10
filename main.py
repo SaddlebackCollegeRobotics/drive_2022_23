@@ -28,8 +28,6 @@ def eventHandler(odrv_0, odrv_1=None):
     gmi.run_event_loop(buttonDownEvents, buttonUpEvents, hatEvents, connectionEvents)   # Async loop to handle gamepad button events
 
     speed = 5
-    rampLVel, rampRVel = 0, 0
-    rampVel = [rampLVel, None, rampRVel]
 
     while True:
         odrv0 = odrive.find_any(serial_number=odrv_0)       # Get odrive object
@@ -47,20 +45,30 @@ def eventHandler(odrv_0, odrv_1=None):
             ...
 
         velocity = ls_y * speed
-        rampVel[int(rs_x) + 1] = (speed * abs(rs_x)) / 1.5
-            
+        ramp = abs(rs_x)/1.5 + 1
+        (rampLVel, rampRVel) = (1, 1)
+
+        if rs_x < 0:
+            rampRVel = ramp
+        elif rs_x > 0:
+            rampLVel = ramp
+
+        # Lambda expressions
+        reqVel = lambda rvel: int(velocity * rvel)  # Requested velocity
+        rndS = lambda x: round(x, 2)                # Formatting stick values
 
         # Left Stick, Forward/Backward Movement
         if l2 > 0 and odrv_1:
-            print("Left Stick: ", ls_x, ls_y, "\tRight Stick: ", rs_x, rs_y)
+            print("Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)))
+            print("Left Speed:", reqVel(rampLVel), "\t\tRight Speed:", reqVel(rampRVel))
             odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv0.axis0.controller.input_vel = int(velocity + rampLVel)
-            odrv0.axis1.controller.input_vel = int(velocity + rampLVel)
+            odrv0.axis0.controller.input_vel = reqVel(rampLVel)
+            odrv0.axis1.controller.input_vel = reqVel(rampLVel)
             odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            odrv1.axis0.controller.input_vel = int(velocity + rampRVel)
-            odrv1.axis1.controller.input_vel = int(velocity + rampRVel)
+            odrv1.axis0.controller.input_vel = reqVel(rampRVel)
+            odrv1.axis1.controller.input_vel = reqVel(rampRVel)
 
         # Stop all motors if no analog input
         if (ls_y == 0 and ls_x == 0) and odrv_1:

@@ -24,7 +24,7 @@ def eventHandler(odrv_0, odrv_1=None):
     connectionEvents = [onGamepadConnect, onGamepadDisconnect]                          # Set connection callbacks
     gmi.run_event_loop(buttonDownEvents, buttonUpEvents, hatEvents, connectionEvents)   # Async loop to handle gamepad button events
 
-    speed = 10
+    speed = 5
 
     while True:
         odrv0 = odrive.find_any(serial_number=odrv_0)       # Get odrive object
@@ -60,7 +60,7 @@ def eventHandler(odrv_0, odrv_1=None):
             odrv1.axis0.requested_state = AXIS_STATE_IDLE
             odrv1.axis1.requested_state = AXIS_STATE_IDLE
 
-        # Ramp up input
+        # Ramp up/down input
         if hat_x < 0 and speed != -20:
             speed -= 5
             print("Current speed: ", speed)
@@ -69,26 +69,19 @@ def eventHandler(odrv_0, odrv_1=None):
             print("Current speed: ", speed)
             
         # Right Stick, Left/Right Movement
-        # if rs_x > 0 and odrv1:
-        #     odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-        #     odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-        #     odrv1.axis0.controller.input_vel += int(rs_x * 10)
-        #     odrv1.axis1.controller.input_vel += int(rs_x * 10)
-        # elif rs_x < 0 and odrv1:
-        #     odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-        #     odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-        #     odrv0.axis0.controller.input_vel += int(rs_x * 10)
-        #     odrv0.axis1.controller.input_vel += int(rs_x * 10)
+        if rs_x > 0 and odrv1:
+            odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            odrv1.axis0.controller.input_vel += int(rs_x * 10)
+            odrv1.axis1.controller.input_vel += int(rs_x * 10)
+        elif rs_x < 0 and odrv1:
+            odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            odrv0.axis0.controller.input_vel += int(rs_x * 10)
+            odrv0.axis1.controller.input_vel += int(rs_x * 10)
 
 # ====================================================================================================
-        # if l2 > 0:
-        #     print("L2")
-        # if r2 > 0:
-        #     print("R2")
-
         # TODO: Arm control
-        # TODO: More optimal way to do this?
-        # ! TEST MOTOR
 # ====================================================================================================
 
 

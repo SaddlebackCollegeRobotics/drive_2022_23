@@ -9,99 +9,103 @@ from std_msgs.msg import Float64MultiArray
 AXIS_DEADZONE = 0.3 # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
 
-def north():
-    print("North")
-
-def west():
-    print("West")
-
-def south():
-    print("South")
-    # gmi.rumbleAll(0, 0.3, 100)
-
-def east():
-    print("East")
-
-def share():
-    print("Share")
-
-def options():
-    print("Options")
-
-def home():
-    print("Home")
-
-def l1():
-    print("L1")
-
-def r1():
-    print("R1")
-
-def l3():
-    print("L3")
-
-def r3():
-    print("R3")
 
 
-# Button UP callbacks
-def northUp():
-    ...
 
-def westUp():
-    ...
+class Buttons:
+    def north():
+        print("North")
 
-def southUp():
-    ...
+    def west():
+        print("West")
 
-def eastUp():
-    ...
+    def south():
+        print("South")
+        # gmi.rumbleAll(0, 0.3, 100)
 
-def shareUp():
-    ...
+    def east():
+        print("East")
 
-def optionsUp():
-    ...
+    def share():
+        print("Share")
 
-def homeUp():
-    ...
+    def options():
+        print("Options")
 
-def l1Up():
-    ...
+    def home():
+        print("Home")
 
-def r1Up():
-    ...
+    def l1():
+        print("L1")
 
-def l3Up():
-    ...
+    def r1():
+        print("R1")
 
-def r3Up():
-    ...
+    def l3():
+        print("L3")
 
-
-# Hat callbacks
-def hatNorth():
-    ...
-
-def hatSouth():
-    ...
-
-def hatWest():
-    print("🦽 Going backwards!! 🦽")
-
-def hatEast():
-    print("💨 Ramp up Speed!! 💨")
-
-def hatCentered():
-    ...
+    def r3():
+        print("R3")
 
 
-# Connection callbacks
-def onGamepadConnect():
-    ...
+    # Button UP callbacks
+    def northUp():
+        ...
 
-def onGamepadDisconnect():
-    ...
+    def westUp():
+        ...
+
+    def southUp():
+        ...
+
+    def eastUp():
+        ...
+
+    def shareUp():
+        ...
+
+    def optionsUp():
+        ...
+
+    def homeUp():
+        ...
+
+    def l1Up():
+        ...
+
+    def r1Up():
+        ...
+
+    def l3Up():
+        ...
+
+    def r3Up():
+        ...
+
+
+    # Hat callbacks
+    def hatNorth():
+        ...
+
+    def hatSouth():
+        ...
+
+    def hatWest():
+        print("🦽 Going backwards!! 🦽")
+
+    def hatEast():
+        print("💨 Ramp up Speed!! 💨")
+
+    def hatCentered():
+        ...
+
+
+    # Connection callbacks
+    def onGamepadConnect():
+        ...
+
+    def onGamepadDisconnect():
+        ...
 
 
 class ControllerPub(Node):
@@ -113,18 +117,20 @@ class ControllerPub(Node):
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
+        b = Buttons()
+
         self.buttonDownEvents = [
-            north, west, south, east,
-            share, options, home,                       
-            l1, r1, l3, r3]
+            b.north, b.west, b.south, b.east,
+            b.share, b.options, b.home,                       
+            b.l1, b.r1, b.l3, b.r3]
         self.buttonUpEvents = [
-        northUp, westUp, southUp, eastUp, 
-        shareUp, optionsUp, homeUp, 
-        l1Up, r1Up, l3Up, r3Up]
+            b.northUp, b.westUp, b.southUp, b.eastUp, 
+            b.shareUp, b.optionsUp, b.homeUp, 
+            b.l1Up, b.r1Up, b.l3Up, b.r3Up]
 
-        self.hatEvents = [hatNorth, hatWest, hatSouth, hatEast]
+        self.hatEvents = [b.hatNorth, b.hatWest, b.hatSouth, b.hatEast]
 
-        self.connectionEvents = [onGamepadConnect, onGamepadDisconnect]
+        self.connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
 
         gmi.run_event_loop(self.buttonDownEvents, self.buttonUpEvents, self.hatEvents, self.connectionEvents)   # Async loop to handle gamepad button events
  

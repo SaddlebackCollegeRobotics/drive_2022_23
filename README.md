@@ -33,7 +33,7 @@
                       |
                       |     //ssh through telecom*
                       |
-        (Your hot garbage windows computer) -------------[PS4 Controller]
+        (Your hot garbage windows computer) ------------- [PS4 Controller]
 ```
 ### Installation:
 ``` bash

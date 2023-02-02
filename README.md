@@ -64,7 +64,7 @@ make sub
 - This is the ROS2 node that publishes the controller input to the ROS2 topic 'controls'.
     + The topic is a Float64MultiArray with 6 elements (in a [3x2] matrix, but stored as List)
 ```
-    ___                         ___
+    ____                         ____
     | left_stick_x    left_stick_y  |
     | right_stick_x   right_stick_y |
     | left_trigger    right_trigger |

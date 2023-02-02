@@ -10,6 +10,18 @@ from std_msgs.msg import Float64MultiArray
 
 AXIS_DEADZONE = 0.3 # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
+b = Buttons()
+# buttonDownEvents = [
+#     b.north, b.west, b.south, b.east,
+#     b.share, b.options, b.home,                       
+#     b.l1, b.r1, b.l3, b.r3]
+# buttonUpEvents = [
+#     b.northUp, b.westUp, b.southUp, b.eastUp, 
+#     b.shareUp, b.optionsUp, b.homeUp, 
+#     b.l1Up, b.r1Up, b.l3Up, b.r3Up]
+# hatEvents = [b.hatNorth, b.hatWest, b.hatSouth, b.hatEast, b.hatCentered]
+connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
+
 
 class ControllerPub(Node):
     def __init__(self):
@@ -20,22 +32,8 @@ class ControllerPub(Node):
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
-        b = Buttons()
-
-        self.buttonDownEvents = [
-            b.north, b.west, b.south, b.east,
-            b.share, b.options, b.home,                       
-            b.l1, b.r1, b.l3, b.r3]
-        self.buttonUpEvents = [
-            b.northUp, b.westUp, b.southUp, b.eastUp, 
-            b.shareUp, b.optionsUp, b.homeUp, 
-            b.l1Up, b.r1Up, b.l3Up, b.r3Up]
-
-        self.hatEvents = [b.hatNorth, b.hatWest, b.hatSouth, b.hatEast]
-
-        self.connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
-
-        gmi.run_event_loop(self.buttonDownEvents, self.buttonUpEvents, self.hatEvents, self.connectionEvents)   # Async loop to handle gamepad button events
+        # gmi.run_event_loop(buttonDownEvents, buttonUpEvents, hatEvents, connectionEvents)   # Async loop to handle gamepad button events
+        gmi.run_event_loop(None, None, None, connectionEvents)   # Async loop to handle gamepad button events
 
 
     def timer_callback(self):
@@ -44,10 +42,9 @@ class ControllerPub(Node):
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
-        (hat_x, hat_y) = gmi.getHat(gp)                     # Get hat
 
         msg = Float64MultiArray()
-        msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2), float(hat_x), float(hat_y)]
+        msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2)]
 
         self.publisher_.publish(msg)
         # self.get_logger().info('SENDED: "%s"' % msg.data)

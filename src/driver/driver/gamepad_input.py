@@ -64,7 +64,7 @@ def getGamepadCount():
 # Call function if not None
 def tryCallback(callback):
     if (callback != None):
-        callback()
+        return
 
 
 # Get controller layout from config file

@@ -36,10 +36,14 @@ class ControllerPub(Node):
         self.connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
 
         gmi.run_event_loop(self.buttonDownEvents, self.buttonUpEvents, self.hatEvents, self.connectionEvents)   # Async loop to handle gamepad button events
- 
+        self.i = 0
+
 
     def timer_callback(self):
         gp = gmi.getGamepad(0)
+
+        self.i += 1
+        print (self.i)
 
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
@@ -50,7 +54,8 @@ class ControllerPub(Node):
         msg.data = f"LS: ({ls_x}, {ls_y}) | RS: ({rs_x}, {rs_y}) | T: ({l2}, {r2}) | H: ({hat_x}, {hat_y})"
 
         self.publisher_.publish(msg)
-        self.get_logger().info('SENDED: "%s"' % msg.data)
+        # self.get_logger().info('SENDED: "%s"' % msg.data)
+        print('SENDING: "%s"' % msg.data)
 
 
 def main(args=None):
@@ -58,8 +63,7 @@ def main(args=None):
 
     controller_pub = ControllerPub()
 
-    while rclpy.ok():
-        rclpy.spin_once(controller_pub)
+    rclpy.spin(controller_pub)
 
     controller_pub.destroy_node()
     rclpy.shutdown()

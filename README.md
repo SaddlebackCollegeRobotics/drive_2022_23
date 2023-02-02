@@ -9,7 +9,7 @@
 ## Installation and Setup
 ### Setup
 *Local development environment:*
-```
+```java
 {motor1}      {motor2}      {motor3}      {motor4}
    |              |            |              |
    \______________/            \______________/
@@ -18,7 +18,7 @@
         (Your hot garbage linux computer)  ------ [PS4 Controller]
 ```
 *Remote/Competition enviroment:*
-```
+```java
 {motor1}      {motor2}      {motor3}      {motor4}
    |              |            |              |
    \______________/            \______________/
@@ -63,8 +63,8 @@ make sub
 - The publisher is responsible for reading the input from the PS4 controller and publishing it to the subscriber.
 - This is the ROS2 node that publishes the controller input to the ROS2 topic 'controls'.
     + The topic is a Float64MultiArray with 6 elements (in a [3x2] matrix, but stored as List)
-```
-    ____                         ____
+```cs
+     ___                         ___
     | left_stick_x    left_stick_y  |
     | right_stick_x   right_stick_y |
     | left_trigger    right_trigger |
@@ -73,7 +73,7 @@ make sub
 
 - The values are normalized to be between -1 and 1, deadzoned to be 0 if the value is less than AXIS_DEADZONE, and are rounded to 2 decimal places. The values are published at a rate of 10 Hz
 - Where the message are published are as follows:
-```
+```java
 - msg :: Float64MultiArray[6]
     + msg.data[0] :: left_stick_x        + msg.data[1] :: left_stick_y
     + msg.data[2] :: right_stick_x       + msg.data[3] :: right_stick_y

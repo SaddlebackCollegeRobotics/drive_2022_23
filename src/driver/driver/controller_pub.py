@@ -1,40 +1,93 @@
-import rclpy
-from rclpy.node import Node
-from . import gamepad_input as gmi
-from .buttons import Buttons
+# ========================================================================================
+# Author:   Jasper Doan     @wluxie
+# Date:     02/01/2023
+# ========================================================================================
+# Description:
+#   This is the ROS2 node that publishes the controller input to the ROS2 topic 'controls'
+#       The topic is a Float64MultiArray with 6 elements (in a [3x2] matrix, but stored as List)
+#           ___                         ___
+#          | left_stick_x    left_stick_y  |
+#          | right_stick_x   right_stick_y |
+#          | left_trigger    right_trigger |
+#          |___                         ___|
+#   Note:
+#       The values are normalized to be between -1 and 1, deadzoned to be 0 if the value is 
+#       less than AXIS_DEADZONE, and are rounded to 2 decimal places
+#       The values are published at a rate of 10 Hz
+# ========================================================================================
+# Dependencies:
+#   - ROS2 Foxy
+#   - Python 3.8
+#   - rclpy
+# ========================================================================================
 
-from std_msgs.msg import Float64MultiArray
+
+import rclpy                                # ROS2 Python API
+from rclpy.node import Node                 # ROS2 Node API
+from . import gamepad_input as gmi          # Gamepad input API by Cameron Rosenthal
+from .buttons import Buttons                # Gamepad button callbacks
+from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 
 
 
-AXIS_DEADZONE = 0.3 # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
+AXIS_DEADZONE = 0.3                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
-b = Buttons()
-# buttonDownEvents = [
-#     b.north, b.west, b.south, b.east,
-#     b.share, b.options, b.home,                       
-#     b.l1, b.r1, b.l3, b.r3]
-# buttonUpEvents = [
-#     b.northUp, b.westUp, b.southUp, b.eastUp, 
-#     b.shareUp, b.optionsUp, b.homeUp, 
-#     b.l1Up, b.r1Up, b.l3Up, b.r3Up]
-# hatEvents = [b.hatNorth, b.hatWest, b.hatSouth, b.hatEast, b.hatCentered]
-connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
+b = Buttons()                                                   # Create button callbacks object
+connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks
 
 
+
+# ==== ROS2 Publisher Node ===============================================================
+# Brief Description:
+#   When run, this node will take in your analog/joystick controller input and publish it to
+#   the ROS2 topic 'controls' as a Float64MultiArray. We used PS4 during development, but
+#   this should work with any controller that has a left stick, right stick, and 2 triggers.
+#
+# Publish:
+#   - msg :: Float64MultiArray[6]
+#      + msg.data[0] :: left_stick_x        + msg.data[1] :: left_stick_y
+#      + msg.data[2] :: right_stick_x       + msg.data[3] :: right_stick_y
+#      + msg.data[4] :: left_trigger        + msg.data[5] :: right_trigger
+#
+# Run in Terminal:
+#   source /opt/ros/foxy/setup.bash             <------ Source ROS2 Foxy environment (if not already sourced)
+#   cd ~/drive_2022_23/src/driver/              <------ Navigate to driver package directory
+#
+#       colcon build --symlink-install          <------ Build driver package (if not already built)
+#       . install/setup.bash                    <------ Source driver package environment
+#       ros2 run driver controller_pub          <------ Run controller_pub node
+#
+#       - or - 
+#
+#       make                                    <------ Make file that builts for you
+#       make pub                                <------ Make file that sources and runs for you
+# ========================================================================================
 class ControllerPub(Node):
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Constructor
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('controller_pub')
+        super().__init__('controller_pub')                                              # Create node with name 'controller_pub'
 
-        self.publisher_ = self.create_publisher(Float64MultiArray, 'controls', 10)
+        # Publishing                                [type]          [topic]   [queue_size]
+        self.publisher_ = self.create_publisher(Float64MultiArray, 'controls', 10)      # Create publisher to publish controller input
 
-        timer_period = 0.1  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
+        timer_period = 0.1                                                              # Timer period in seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)               # Create timer to publish controller input
 
-        # gmi.run_event_loop(buttonDownEvents, buttonUpEvents, hatEvents, connectionEvents)   # Async loop to handle gamepad button events
-        gmi.run_event_loop(None, None, None, connectionEvents)   # Async loop to handle gamepad button events
+        # Note: I disabled button callbacks because they were causing the program to crash
+        #       I think it was because the callbacks were trying to access the ROS2 node
+        #       while the node was being spinned. I'm not sure, but I'll look into it
+        #       later. For now, we can just use the controller input to drive the rover
+        gmi.run_event_loop(None, None, None, connectionEvents)                          # Async loop to handle gamepad button events
 
 
+
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Timer Callback
+    #       This function is called every time the timer goes off. It gets the controller
+    #       input and publishes it to the ROS2 topic 'controls'
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def timer_callback(self):
         gp = gmi.getGamepad(0)
 
@@ -42,12 +95,18 @@ class ControllerPub(Node):
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
 
-        msg = Float64MultiArray()
+        msg = Float64MultiArray()                           # Create message
+
+        # Set message data
         msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2)]
 
-        self.publisher_.publish(msg)
-        # self.get_logger().info('SENDED: "%s"' % msg.data)
+        self.publisher_.publish(msg)                        # Publish that sucker
+
+        # Print for debugging
         print('😤😤 SENDING [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😤😤' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+
+
+
 
 
 def main(args=None):

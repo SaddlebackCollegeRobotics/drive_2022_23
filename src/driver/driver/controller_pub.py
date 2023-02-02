@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-# from calibrate import *
 from . import gamepad_input as gmi
 from .buttons import Buttons
 
@@ -48,7 +47,7 @@ class ControllerPub(Node):
 
         self.publisher_.publish(msg)
         # self.get_logger().info('SENDED: "%s"' % msg.data)
-        print('SENDING: "%s"' % msg.data)
+        print('😤😤 SENDING [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😤😤' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
 
 
 def main(args=None):

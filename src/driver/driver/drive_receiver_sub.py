@@ -25,7 +25,9 @@ class DriveReceiverSub(Node):
 
     def listener_callback(self, msg):
         # self.get_logger().info('RECEIVED: "%s"' % msg.data)
-        print('RECEIVING: "%s"' % msg.data)
+        (ls_x, ls_y, rs_x, rs_y, l2, r2) = msg.data
+
+        print('😫😫 RECEIVED [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😫😫' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
 
     
 def main(args=None):

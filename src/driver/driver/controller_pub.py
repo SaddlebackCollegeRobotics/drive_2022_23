@@ -4,7 +4,7 @@ from rclpy.node import Node
 from . import gamepad_input as gmi
 from .buttons import Buttons
 
-from std_msgs.msg import String
+from std_msgs.msg import Float64MultiArray
 
 
 
@@ -15,7 +15,7 @@ class ControllerPub(Node):
     def __init__(self):
         super().__init__('controller_pub')
 
-        self.publisher_ = self.create_publisher(String, 'controls', 10)
+        self.publisher_ = self.create_publisher(Float64MultiArray, 'controls', 10)
 
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -36,22 +36,18 @@ class ControllerPub(Node):
         self.connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]
 
         gmi.run_event_loop(self.buttonDownEvents, self.buttonUpEvents, self.hatEvents, self.connectionEvents)   # Async loop to handle gamepad button events
-        self.i = 0
 
 
     def timer_callback(self):
         gp = gmi.getGamepad(0)
-
-        self.i += 1
-        print (self.i)
 
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
         (hat_x, hat_y) = gmi.getHat(gp)                     # Get hat
 
-        msg = String()
-        msg.data = f"LS: ({ls_x}, {ls_y}) | RS: ({rs_x}, {rs_y}) | T: ({l2}, {r2}) | H: ({hat_x}, {hat_y})"
+        msg = Float64MultiArray()
+        msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2), float(hat_x), float(hat_y)]
 
         self.publisher_.publish(msg)
         # self.get_logger().info('SENDED: "%s"' % msg.data)

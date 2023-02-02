@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from .calibrate import *
 import subprocess
-from std_msgs.msg import String
+from std_msgs.msg import Float64MultiArray
 
 
 MIN_SPEED = -20
@@ -15,7 +15,7 @@ class DriveReceiverSub(Node):
         super().__init__('drive_receiver_sub')
 
         self.subscription = self.create_subscription(
-            String,
+            Float64MultiArray,
             'controls',
             self.listener_callback,
             10)

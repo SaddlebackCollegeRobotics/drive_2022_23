@@ -24,7 +24,8 @@ class DriveReceiverSub(Node):
         self.speed = 5
 
     def listener_callback(self, msg):
-        self.get_logger().info('RECEIVED: "%s"' % msg.data)
+        # self.get_logger().info('RECEIVED: "%s"' % msg.data)
+        print('RECEIVING: "%s"' % msg.data)
 
     
 def main(args=None):

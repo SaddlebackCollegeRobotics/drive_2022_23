@@ -1,8 +1,8 @@
 import rclpy
 from rclpy.node import Node
-# from calibrate import *
+from .calibrate import *
 import subprocess
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import String
 
 
 MIN_SPEED = -20
@@ -15,7 +15,7 @@ class DriveReceiverSub(Node):
         super().__init__('drive_receiver_sub')
 
         self.subscription = self.create_subscription(
-            Float64MultiArray,
+            String,
             'controls',
             self.listener_callback,
             10)
@@ -24,7 +24,7 @@ class DriveReceiverSub(Node):
         self.speed = 5
 
     def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+        self.get_logger().info('RECEIVED: "%s"' % msg.data)
 
     
 def main(args=None):

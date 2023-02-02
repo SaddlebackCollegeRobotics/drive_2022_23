@@ -4,7 +4,7 @@ package_name = 'driver'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='69.420.80085',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -15,8 +15,8 @@ setup(
     zip_safe=True,
     maintainer='jasper',
     maintainer_email='49565505+wluxie@users.noreply.github.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Does something with the rover.',
+    license='I AM MY OWN LICENSE',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

@@ -1,4 +1,5 @@
 # drive_2022_23
+![](img/banner.png)
 
 ## Description
 - Drive repository for the 2022-23 season of URC by SC Robotics. This repository contains the code for driving the rover through using a **PS4** controller.

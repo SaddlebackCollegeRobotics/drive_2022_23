@@ -41,7 +41,7 @@
 git clone https://github.com/SC-Robotics-2021/drive_2022_23.git
 
 # Install the dependencies
-(figure that our on your own, I'm not your mom)
+(figure that our on your own, I\'m not your mom)
 (hint: check out our spaghetti code, and look at the imports)
 
 # Run the code

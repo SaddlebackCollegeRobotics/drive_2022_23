@@ -28,13 +28,13 @@
             \______________________ /
                       | 
                     (Loki)
-                      |     //ssh through ymir's terminal*
+                      |     // ssh through ymir's terminal*
                       |
                     (Ymir)  // Gate way of the rover
                       |
-                      |     //ssh through telecom*
+                      |     // ssh through telecom*
                       |
-        (Your hot garbage windows computer) ------------- [PS4 Controller]
+        (Your hot garbage computer) ------------- [PS4 Controller]
 ```
 ### Installation:
 ``` bash

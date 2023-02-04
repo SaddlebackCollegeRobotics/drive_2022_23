@@ -24,8 +24,8 @@ from .calibrate import *                    # Odrive calibration API by Max Rehm
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 
 
-MIN_SPEED = -30     # Max negative velocity (ik bad naming convention)
-MAX_SPEED = 30      # Max positive velocity
+MIN_SPEED = -25     # Max negative velocity (ik bad naming convention)
+MAX_SPEED = 25      # Max positive velocity
 CREMENT = 5         # Speed increment/decrement value
 
 
@@ -59,7 +59,7 @@ class DriveReceiverSub(Node):
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
-    def __init__(self):
+    def __init__(self, odrv_0, odrv_1=None):
         super().__init__('drive_receiver_sub')
 
         self.subscription = self.create_subscription(           # Create subscription to 'controls' topic
@@ -69,6 +69,14 @@ class DriveReceiverSub(Node):
             10)                                                 # Queue size
         self.subscription                                       # Prevent unused variable warning
 
+        self.odrv_0 = odrv_0
+        self.odrv_1 = odrv_1
+
+        self.odrv0 = None
+        self.odrv1 = None
+
+        self.speed = MAX_SPEED # Test for now
+
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -77,17 +85,81 @@ class DriveReceiverSub(Node):
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def listener_callback(self, msg):
         (ls_x, ls_y, rs_x, rs_y, l2, r2) = msg.data             # Unpack message data
+        
+        self.odrv0 = odrive.find_any(serial_number=self.odrv_0)       # Get odrive object
+        if self.odrv_1:
+            self.odrv1 = odrive.find_any(serial_number=self.odrv_1)   # Get odrive object
 
-        print('😫😫 RECEIVED [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😫😫' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+
+
+        velocity = ls_y * self.speed
+        ramp = abs(rs_x)/1.5 + 1
+        (rampLVel, rampRVel) = (1, 1)
+
+
+
+        if rs_x < 0:
+            rampRVel = ramp
+        elif rs_x > 0:
+            rampLVel = ramp
+
+        # Lambda expressions
+        reqVel = lambda rvel: int(velocity * rvel)  # Requested velocity
+        rndS = lambda x: round(x, 2)                # Formatting stick values
+
+
+        # print("😫😫 Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)), "😫😫")
+        print("😫😫 Left Speed:", reqVel(rampLVel), "\t\tRight Speed:", reqVel(rampRVel), "😫😫")
+        
+        # Forward/Backward Movement
+        if (l2 == 1) and self.odrv_1:
+            self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv0.axis0.controller.input_vel = reqVel(rampLVel)
+            self.odrv0.axis1.controller.input_vel = reqVel(rampLVel)
+            self.odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv1.axis0.controller.input_vel = -reqVel(rampRVel)
+            self.odrv1.axis1.controller.input_vel = -reqVel(rampRVel)
+
+        # Turn
+        if r2 > 0 and self.odrv1:
+            self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv0.axis0.controller.input_vel = 15 * rs_x
+            self.odrv0.axis1.controller.input_vel = 15 * rs_x
+            self.odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+            self.odrv1.axis0.controller.input_vel = 15 * rs_x
+            self.odrv1.axis1.controller.input_vel = 15 * rs_x
+
+
+        # Stop all motors if no analog input
+        if (ls_y == 0 and ls_x == 0) and self.odrv_1:
+            self.odrv0.axis0.requested_state = AXIS_STATE_IDLE
+            self.odrv0.axis1.requested_state = AXIS_STATE_IDLE
+            self.odrv1.axis0.requested_state = AXIS_STATE_IDLE
+            self.odrv1.axis1.requested_state = AXIS_STATE_IDLE
+
+
+
+        # print('😫😫 RECEIVED [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😫😫' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
 
     
 
 
 
 def main(args=None):
+    odrives = get_all_odrives()
+    odrv0 = odrives[0]
+    odrv1 = odrives[1]
+
+    calibrate_all_motors(odrv0, odrv1)
+
+
     rclpy.init(args=args)
 
-    drive_receiver_sub = DriveReceiverSub()
+    drive_receiver_sub = DriveReceiverSub(odrv0, odrv1)
 
     rclpy.spin(drive_receiver_sub)
 
@@ -96,4 +168,5 @@ def main(args=None):
 
 
 if __name__ == '__main__':
+
     main()

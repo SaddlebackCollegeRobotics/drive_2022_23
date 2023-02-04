@@ -108,11 +108,11 @@ class DriveReceiverSub(Node):
         rndS = lambda x: round(x, 2)                # Formatting stick values
 
 
-        # print("😫😫 Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)), "😫😫")
+        print("😫😫 Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)), "😫😫")
         print("😫😫 Left Speed:", reqVel(rampLVel), "\t\tRight Speed:", reqVel(rampRVel), "😫😫")
         
         # Forward/Backward Movement
-        if (l2 == 1) and self.odrv_1:
+        if l2 > 0 and self.odrv_1:
             self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
             self.odrv0.axis0.controller.input_vel = reqVel(rampLVel)

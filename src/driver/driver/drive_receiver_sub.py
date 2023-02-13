@@ -24,8 +24,8 @@ from .calibrate import *                    # Odrive calibration API by Max Rehm
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 
 
-MIN_SPEED = -25     # Max negative velocity (ik bad naming convention)
-MAX_SPEED = 25      # Max positive velocity
+MIN_SPEED = -35     # Max negative velocity (ik bad naming convention)
+MAX_SPEED = 35      # Max positive velocity
 CREMENT = 5         # Speed increment/decrement value
 
 
@@ -77,6 +77,33 @@ class DriveReceiverSub(Node):
 
         self.speed = MAX_SPEED # Test for now
 
+    
+    def close_loop_control(self):
+        self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        self.odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+
+
+    def idle_state(self):
+        self.odrv0.axis0.requested_state = AXIS_STATE_IDLE
+        self.odrv0.axis1.requested_state = AXIS_STATE_IDLE
+        self.odrv1.axis0.requested_state = AXIS_STATE_IDLE
+        self.odrv1.axis1.requested_state = AXIS_STATE_IDLE
+
+
+    def set_motor_vel(self, vel):
+        self.odrv0.axis0.controller.input_vel = vel
+        self.odrv0.axis1.controller.input_vel = vel
+        self.odrv1.axis0.controller.input_vel = vel
+        self.odrv1.axis1.controller.input_vel = vel
+
+    
+    def set_steer_vel(self, left, right):
+        self.odrv0.axis0.controller.input_vel = left
+        self.odrv0.axis1.controller.input_vel = left
+        self.odrv1.axis0.controller.input_vel = right
+        self.odrv1.axis1.controller.input_vel = right
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -91,59 +118,47 @@ class DriveReceiverSub(Node):
             self.odrv1 = odrive.find_any(serial_number=self.odrv_1)   # Get odrive object
 
 
+        fwd_vel = ls_y * self.speed
+        turn_vel = abs(rs_x) * self.speed * 0.8
 
-        velocity = ls_y * self.speed
-        ramp = abs(rs_x)/1.5 + 1
-        (rampLVel, rampRVel) = (1, 1)
+        idle = (ls_y == 0 and ls_x == 0)
+        hold_left_stick = l2 > 0 and r2 == 0
+        hold_right_stick = l2 == 0 and r2 > 0
 
-
-
-        if rs_x < 0:
-            rampRVel = ramp
-        elif rs_x > 0:
-            rampLVel = ramp
-
-        # Lambda expressions
-        reqVel = lambda rvel: int(velocity * rvel)  # Requested velocity
         rndS = lambda x: round(x, 2)                # Formatting stick values
 
 
         print("😫😫 Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)), "😫😫")
-        print("😫😫 Left Speed:", reqVel(rampLVel), "\t\tRight Speed:", reqVel(rampRVel), "😫😫")
+        print("😫😫 Left Speed:", rndS(fwd_vel), "\t\tRight Speed:", rndS(fwd_vel), "😫😫")
         
-        # Forward/Backward Movement
-        if l2 > 0 and self.odrv_1:
-            self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv0.axis0.controller.input_vel = reqVel(rampLVel)
-            self.odrv0.axis1.controller.input_vel = reqVel(rampLVel)
-            self.odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv1.axis0.controller.input_vel = -reqVel(rampRVel)
-            self.odrv1.axis1.controller.input_vel = -reqVel(rampRVel)
 
-        # Turn
-        if r2 > 0 and self.odrv1:
-            self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv0.axis0.controller.input_vel = 15 * rs_x
-            self.odrv0.axis1.controller.input_vel = 15 * rs_x
-            self.odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-            self.odrv1.axis0.controller.input_vel = 15 * rs_x
-            self.odrv1.axis1.controller.input_vel = 15 * rs_x
+        # ==== Forward/Backward Movement ===========================
+        if hold_left_stick and (not idle) and self.odrv_1:
+            left_motor = -fwd_vel
+            right_motor = fwd_vel
 
+            if rs_x > 0:
+                right_motor = right_motor * 0.5
+            elif rs_x < 0:
+                left_motor = left_motor * 0.5
 
-        # Stop all motors if no analog input
-        if (ls_y == 0 and ls_x == 0) and self.odrv_1:
-            self.odrv0.axis0.requested_state = AXIS_STATE_IDLE
-            self.odrv0.axis1.requested_state = AXIS_STATE_IDLE
-            self.odrv1.axis0.requested_state = AXIS_STATE_IDLE
-            self.odrv1.axis1.requested_state = AXIS_STATE_IDLE
+            self.close_loop_control()
+            self.set_steer_vel(left_motor, right_motor)
+                
 
+        # ==== Turn =================================================
+        if hold_right_stick and (not idle) and self.odrv_1:
+            self.close_loop_control()
+            if rs_x > 0:
+                self.set_motor_vel(-turn_vel)
+            elif rs_x < 0:
+                self.set_motor_vel(turn_vel)
+            
 
-
-        # print('😫😫 RECEIVED [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😫😫' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+        # ==== Stop all motors if no analog input ===================
+        if idle and self.odrv_1:
+            self.set_motor_vel(0)
+            self.idle_state()
 
     
 

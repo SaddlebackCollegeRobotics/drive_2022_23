@@ -69,8 +69,8 @@ class ControllerPub(Node):
     def __init__(self):
         super().__init__('controller_pub')                                              # Create node with name 'controller_pub'
 
-        # Publishing                                [type]          [topic]   [queue_size]
-        self.publisher_ = self.create_publisher(Float64MultiArray, 'controls', 10)      # Create publisher to publish controller input
+        # Publishing                                [type]                [topic]     [queue_size]
+        self.publisher_ = self.create_publisher(Float64MultiArray, 'drive/analog_control', 10)      # Create publisher to publish controller input
 
         timer_period = 0.1                                                              # Timer period in seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)               # Create timer to publish controller input
@@ -82,30 +82,25 @@ class ControllerPub(Node):
         gmi.run_event_loop(None, None, None, connectionEvents)                          # Async loop to handle gamepad button events
 
 
-
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Timer Callback
     #       This function is called every time the timer goes off. It gets the controller
     #       input and publishes it to the ROS2 topic 'controls'
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def timer_callback(self):
-        gp = gmi.getGamepad(0)
+        msg = Float64MultiArray()                           # Create message
 
+        gp = gmi.getGamepad(0)
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
+    
 
-        msg = Float64MultiArray()                           # Create message
-
-        # Set message data
-        msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2)]
-
-        self.publisher_.publish(msg)                        # Publish that sucker
-
-        # Print for debugging
-        print('😤😤 SENDING [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😤😤' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+        (l_analog, r_analog) = (ls_y,ls_y)
 
 
+        msg.data = [float(l_analog), float(r_analog)]
+        self.publisher_.publish(msg)
 
 
 

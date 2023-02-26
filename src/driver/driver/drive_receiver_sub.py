@@ -64,7 +64,7 @@ class DriveReceiverSub(Node):
 
         self.subscription = self.create_subscription(           # Create subscription to 'controls' topic
             Float64MultiArray,                                  # Message type
-            'controls',                                         # Topic name
+            'drive/analog_control',                             # Topic name
             self.listener_callback,                             # Callback function to call when message is received
             10)                                                 # Queue size
         self.subscription                                       # Prevent unused variable warning
@@ -92,18 +92,11 @@ class DriveReceiverSub(Node):
         self.odrv1.axis1.requested_state = AXIS_STATE_IDLE
 
 
-    def set_motor_vel(self, vel):
-        self.odrv0.axis0.controller.input_vel = vel
-        self.odrv0.axis1.controller.input_vel = vel
-        self.odrv1.axis0.controller.input_vel = vel
-        self.odrv1.axis1.controller.input_vel = vel
-
-    
-    def set_steer_vel(self, left, right):
-        self.odrv0.axis0.controller.input_vel = left
-        self.odrv0.axis1.controller.input_vel = left
-        self.odrv1.axis0.controller.input_vel = right
-        self.odrv1.axis1.controller.input_vel = right
+    def set_motor_speed(self, left_speed, right_speed):
+        self.odrv0.axis0.controller.input_vel = -left_speed
+        self.odrv0.axis1.controller.input_vel = -left_speed
+        self.odrv1.axis0.controller.input_vel = right_speed
+        self.odrv1.axis1.controller.input_vel = right_speed
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -111,56 +104,22 @@ class DriveReceiverSub(Node):
     #       Called when a message is received on the 'controls' topic
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def listener_callback(self, msg):
-        (ls_x, ls_y, rs_x, rs_y, l2, r2) = msg.data             # Unpack message data
-        
+
+        (l_analog, r_analog) = msg.data
+
         self.odrv0 = odrive.find_any(serial_number=self.odrv_0)       # Get odrive object
         if self.odrv_1:
             self.odrv1 = odrive.find_any(serial_number=self.odrv_1)   # Get odrive object
 
 
-        fwd_vel = ls_y * self.speed
-        turn_vel = abs(rs_x) * self.speed * 0.8
-
-        idle = (ls_y == 0 and ls_x == 0)
-        hold_left_stick = l2 > 0 and r2 == 0
-        hold_right_stick = l2 == 0 and r2 > 0
-
-        rndS = lambda x: round(x, 2)                # Formatting stick values
-
-
-        print("😫😫 Left Stick:", (rndS(ls_x), rndS(ls_y)), "\tRight Stick:", (rndS(rs_x), rndS(rs_y)), "😫😫")
-        print("😫😫 Left Speed:", rndS(fwd_vel), "\t\tRight Speed:", rndS(fwd_vel), "😫😫")
-        
-
-        # ==== Forward/Backward Movement ===========================
-        if hold_left_stick and (not idle) and self.odrv_1:
-            left_motor = -fwd_vel
-            right_motor = fwd_vel
-
-            if rs_x > 0:
-                right_motor = right_motor * 0.5
-            elif rs_x < 0:
-                left_motor = left_motor * 0.5
-
-            self.close_loop_control()
-            self.set_steer_vel(left_motor, right_motor)
-                
-
-        # ==== Turn =================================================
-        if hold_right_stick and (not idle) and self.odrv_1:
-            self.close_loop_control()
-            if rs_x > 0:
-                self.set_motor_vel(-turn_vel)
-            elif rs_x < 0:
-                self.set_motor_vel(turn_vel)
-            
-
-        # ==== Stop all motors if no analog input ===================
-        if idle and self.odrv_1:
+        if l_analog == 0 and r_analog == 0:
             self.set_motor_vel(0)
-            self.idle_state()
+            self.idle_state() 
+        else:
+            self.close_loop_control()
+            self.set_left_speed(l_analog)
+            self.set_right_speed(r_analog)
 
-    
 
 
 

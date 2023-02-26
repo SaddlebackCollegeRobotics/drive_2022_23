@@ -117,8 +117,7 @@ class DriveReceiverSub(Node):
             self.idle_state() 
         else:
             self.close_loop_control()
-            self.set_left_speed(l_analog * self.speed)
-            self.set_right_speed(r_analog * self.speed)
+            self.set_motor_speed(l_analog * self.speed, r_analog * self.speed)
 
 
 

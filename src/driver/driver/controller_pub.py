@@ -96,7 +96,14 @@ class ControllerPub(Node):
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
     
 
-        (l_analog, r_analog) = (ls_y,ls_y)
+        if rs_x != 0 and ls_y == 0:
+            (l_analog, r_analog) = (rs_x, -rs_x)
+        elif rs_x > 0:
+            (l_analog, r_analog) = (ls_y, ls_y * abs(rs_x/4))
+        elif rs_x < 0:
+            (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
+        else:
+            (l_analog, r_analog) = (ls_y,ls_y)
 
 
         msg.data = [float(l_analog), float(r_analog)]

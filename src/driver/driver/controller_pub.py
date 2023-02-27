@@ -112,7 +112,7 @@ class ControllerPub(Node):
 
 
         msg.data = [float(l_analog), float(r_analog)]
-        print('== SENDING [LS: (%.2f, %.2f) 😤 RS: (%.2f, %.2f) 😤 LT: %.2f 😤 RT: %.2f] ==' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+        print('== SENDING [LS: (%.2f, %.2f) 😤 RS: (%.2f, %.2f)] ==' % (ls_x, ls_y, rs_x, rs_y))
         print('-- SENDING [L_ANALOG: %.2f 😤 R_ANALOG: %.2f] --' % (l_analog, r_analog))
         self.publisher_.publish(msg)
 

@@ -126,8 +126,8 @@ class DriveReceiverSub(Node):
             self.close_loop_control()
             self.set_motor_speed(l_analog * self.speed, r_analog * self.speed)
 
-        print('== Left Analog: {} 😫 Right Analog: {} =='.format(l_analog, r_analog))
-        print('-- Left Speed: {} 😫 Right Speed: {} --'.format(l_analog * self.speed, r_analog * self.speed))
+        print('== Left Analog: %.2f 😫 Right Analog: %.2f ==' % (l_analog, r_analog))
+        print('-- Left Speed: %.2f 😫 Right Speed: %.2f --' % (l_analog * self.speed, r_analog * self.speed))
 
 
 

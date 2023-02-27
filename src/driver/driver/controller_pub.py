@@ -91,24 +91,32 @@ class ControllerPub(Node):
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
     
-        idle = (ls_y == 0 and ls_x == 0)
-        hold_left_stick = l2 > 0 and r2 == 0
-        hold_right_stick = l2 == 0 and r2 > 0
+        enable_left = l2 > 0
+        enable_right = r2 > 0
 
-        if hold_right_stick and (rs_x != 0 and ls_y == 0):      # Stationary turn
-            (l_analog, r_analog) = (rs_x, -rs_x)
+        if enable_left:
+            l_analog = ls_y
+        if enable_right:
+            r_analog = rs_y
 
-        elif hold_left_stick and (rs_x > 0):                    # Turning right while moving
-            (l_analog, r_analog) = (ls_y, ls_y * abs(rs_x/4))
 
-        elif hold_left_stick and (rs_x < 0):                    # Turning left while moving
-            (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
 
-        elif hold_left_stick and (not idle):                    # Moving forward or backward
-            (l_analog, r_analog) = (ls_y, ls_y)
+        # hold_right_stick = l2 == 0 and r2 > 0
 
-        else:                                                   # Idle
-            (l_analog, r_analog) = (0, 0)
+        # if hold_right_stick and (rs_x != 0 and ls_y == 0):      # Stationary turn
+        #     (l_analog, r_analog) = (rs_x, -rs_x)
+
+        # elif hold_left_stick and (rs_x > 0):                    # Turning right while moving
+        #     (l_analog, r_analog) = (ls_y, ls_y * abs(rs_x/4))
+
+        # elif hold_left_stick and (rs_x < 0):                    # Turning left while moving
+        #     (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
+
+        # elif hold_left_stick and (not idle):                    # Moving forward or backward
+        #     (l_analog, r_analog) = (ls_y, ls_y)
+
+        # else:                                                   # Idle
+        #     (l_analog, r_analog) = (0, 0)
 
 
         msg.data = [float(l_analog), float(r_analog)]

@@ -99,7 +99,7 @@ class DriveReceiverSub(Node):
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Set motor speed
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
-    def set_motor_speed(self, left_speed, right_speed):
+    def set_motor_velocity(self, left_speed, right_speed):
         self.odrv0.axis0.controller.input_vel = -left_speed
         self.odrv0.axis1.controller.input_vel = -left_speed
         self.odrv1.axis0.controller.input_vel = right_speed
@@ -120,11 +120,11 @@ class DriveReceiverSub(Node):
 
 
         if l_analog == 0 and r_analog == 0:
-            self.set_motor_vel(0, 0)
+            self.set_motor_velocity(0, 0)
             self.idle_state() 
         else:
             self.close_loop_control()
-            self.set_motor_speed(l_analog * self.speed, r_analog * self.speed)
+            self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)
 
         print('== Left Analog: %.2f 😫 Right Analog: %.2f ==' % (l_analog, r_analog))
         print('-- Left Speed: %.2f 😫 Right Speed: %.2f --' % (l_analog * self.speed, r_analog * self.speed))

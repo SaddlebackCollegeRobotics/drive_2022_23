@@ -37,10 +37,8 @@ CREMENT = 5         # Speed increment/decrement value
 #   this should work with any controller that has a left stick, right stick, and 2 triggers.
 #
 # Subscribe:
-#   - msg :: Float64MultiArray[6]
-#      + msg.data[0] :: left_stick_x        + msg.data[1] :: left_stick_y
-#      + msg.data[2] :: right_stick_x       + msg.data[3] :: right_stick_y
-#      + msg.data[4] :: left_trigger        + msg.data[5] :: right_trigger
+#   - msg :: Float64MultiArray[2]
+#      + msg.data[0] :: l_analog          + msg.data[1] :: r_analog
 #
 # Run in Terminal:
 #   source /opt/ros/foxy/setup.bash             <------ Source ROS2 Foxy environment (if not already sourced)
@@ -77,7 +75,10 @@ class DriveReceiverSub(Node):
 
         self.speed = MAX_SPEED # Test for now
 
-    
+
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Set closed loop control
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,     
     def close_loop_control(self):
         self.odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
         self.odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
@@ -85,6 +86,9 @@ class DriveReceiverSub(Node):
         self.odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
 
 
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Set idle state
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def idle_state(self):
         self.odrv0.axis0.requested_state = AXIS_STATE_IDLE
         self.odrv0.axis1.requested_state = AXIS_STATE_IDLE
@@ -92,6 +96,9 @@ class DriveReceiverSub(Node):
         self.odrv1.axis1.requested_state = AXIS_STATE_IDLE
 
 
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Set motor speed
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def set_motor_speed(self, left_speed, right_speed):
         self.odrv0.axis0.controller.input_vel = -left_speed
         self.odrv0.axis1.controller.input_vel = -left_speed
@@ -119,6 +126,9 @@ class DriveReceiverSub(Node):
             self.close_loop_control()
             self.set_motor_speed(l_analog * self.speed, r_analog * self.speed)
 
+        print('== Left Analog: {} 😫 Right Analog: {} =='.format(l_analog, r_analog))
+        print('-- Left Speed: {} 😫 Right Speed: {} --'.format(l_analog * self.speed, r_analog * self.speed))
+
 
 
 
@@ -141,5 +151,4 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-
     main()

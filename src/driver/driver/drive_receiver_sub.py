@@ -113,7 +113,7 @@ class DriveReceiverSub(Node):
 
 
         if l_analog == 0 and r_analog == 0:
-            self.set_motor_vel(0)
+            self.set_motor_vel(0, 0)
             self.idle_state() 
         else:
             self.close_loop_control()

@@ -103,7 +103,7 @@ class ControllerPub(Node):
         elif rs_x < 0:
             (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
         else:
-            (l_analog, r_analog) = (ls_y,ls_y)
+            (l_analog, r_analog) = (ls_y, ls_y)
 
 
         msg.data = [float(l_analog), float(r_analog)]

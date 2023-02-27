@@ -87,19 +87,23 @@ class ControllerPub(Node):
         msg = Float64MultiArray()                           # Create message
 
         gp = gmi.getGamepad(0)
-        (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
-        (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
-        (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
+        ls_x, ls_y = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
+        rs_x, rs_y = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
+        l2, r2 = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
+        l1, r1 = gmi.getButtonValue(gp, 7), gmi.getButtonValue(gp, 8)
     
         enable_left = l2 > 0
         enable_right = r2 > 0
 
+        l_analog, r_analog = 0.0, 0.0
+
         if enable_left:
-            l_analog = ls_y
+            l_analog = float(-ls_y)
         if enable_right:
-            r_analog = rs_y
+            r_analog = float(-rs_y)
 
-
+        if l1 or r1:
+            r_analog = l_analog
 
         # hold_right_stick = l2 == 0 and r2 > 0
 
@@ -119,7 +123,7 @@ class ControllerPub(Node):
         #     (l_analog, r_analog) = (0, 0)
 
 
-        msg.data = [float(l_analog), float(r_analog)]
+        msg.data = [l_analog, r_analog]
         print('== SENDING [LS: (%.2f, %.2f) 😤 RS: (%.2f, %.2f)] ==' % (ls_x, ls_y, rs_x, rs_y))
         print('-- SENDING [L_ANALOG: %.2f 😤 R_ANALOG: %.2f] --' % (l_analog, r_analog))
         self.publisher_.publish(msg)

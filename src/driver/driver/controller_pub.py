@@ -4,12 +4,10 @@
 # ========================================================================================
 # Description:
 #   This is the ROS2 node that publishes the controller input to the ROS2 topic 'controls'
-#       The topic is a Float64MultiArray with 6 elements (in a [3x2] matrix, but stored as List)
-#           ___                         ___
-#          | left_stick_x    left_stick_y  |
-#          | right_stick_x   right_stick_y |
-#          | left_trigger    right_trigger |
-#          |___                         ___|
+#       The topic is a Float64MultiArray with 2 elements (in a [1x2] matrix, but stored as List)
+#           ___                 ___
+#          | l_analog    r_analog  |
+#          |___                 ___|
 #   Note:
 #       The values are normalized to be between -1 and 1, deadzoned to be 0 if the value is 
 #       less than AXIS_DEADZONE, and are rounded to 2 decimal places
@@ -44,10 +42,8 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 #   this should work with any controller that has a left stick, right stick, and 2 triggers.
 #
 # Publish:
-#   - msg :: Float64MultiArray[6]
-#      + msg.data[0] :: left_stick_x        + msg.data[1] :: left_stick_y
-#      + msg.data[2] :: right_stick_x       + msg.data[3] :: right_stick_y
-#      + msg.data[4] :: left_trigger        + msg.data[5] :: right_trigger
+#   - msg :: Float64MultiArray[2]
+#      + msg.data[0] :: l_analog          + msg.data[1] :: r_analog
 #
 # Run in Terminal:
 #   source /opt/ros/foxy/setup.bash             <------ Source ROS2 Foxy environment (if not already sourced)
@@ -69,8 +65,8 @@ class ControllerPub(Node):
     def __init__(self):
         super().__init__('controller_pub')                                              # Create node with name 'controller_pub'
 
-        # Publishing                                [type]          [topic]   [queue_size]
-        self.publisher_ = self.create_publisher(Float64MultiArray, 'controls', 10)      # Create publisher to publish controller input
+        # Publishing                                [type]                [topic]     [queue_size]
+        self.publisher_ = self.create_publisher(Float64MultiArray, 'drive/analog_control', 10)      # Create publisher to publish controller input
 
         timer_period = 0.1                                                              # Timer period in seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)               # Create timer to publish controller input
@@ -82,30 +78,51 @@ class ControllerPub(Node):
         gmi.run_event_loop(None, None, None, connectionEvents)                          # Async loop to handle gamepad button events
 
 
-
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Timer Callback
     #       This function is called every time the timer goes off. It gets the controller
     #       input and publishes it to the ROS2 topic 'controls'
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def timer_callback(self):
-        gp = gmi.getGamepad(0)
+        msg = Float64MultiArray()                           # Create message
 
+        gp = gmi.getGamepad(0)
         (ls_x, ls_y) = gmi.getLeftStick(gp, AXIS_DEADZONE)  # Get left stick
         (rs_x, rs_y) = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         (l2, r2) = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
+    
+        enable_left = l2 > 0
+        enable_right = r2 > 0
 
-        msg = Float64MultiArray()                           # Create message
-
-        # Set message data
-        msg.data = [float(ls_x), float(ls_y), float(rs_x), float(rs_y), float(l2), float(r2)]
-
-        self.publisher_.publish(msg)                        # Publish that sucker
-
-        # Print for debugging
-        print('😤😤 SENDING [LS: (%.2f, %.2f) | RS: (%.2f, %.2f) | LT: %.2f | RT: %.2f] 😤😤' % (ls_x, ls_y, rs_x, rs_y, l2, r2))
+        if enable_left:
+            l_analog = ls_y
+        if enable_right:
+            r_analog = rs_y
 
 
+
+        # hold_right_stick = l2 == 0 and r2 > 0
+
+        # if hold_right_stick and (rs_x != 0 and ls_y == 0):      # Stationary turn
+        #     (l_analog, r_analog) = (rs_x, -rs_x)
+
+        # elif hold_left_stick and (rs_x > 0):                    # Turning right while moving
+        #     (l_analog, r_analog) = (ls_y, ls_y * abs(rs_x/4))
+
+        # elif hold_left_stick and (rs_x < 0):                    # Turning left while moving
+        #     (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
+
+        # elif hold_left_stick and (not idle):                    # Moving forward or backward
+        #     (l_analog, r_analog) = (ls_y, ls_y)
+
+        # else:                                                   # Idle
+        #     (l_analog, r_analog) = (0, 0)
+
+
+        msg.data = [float(l_analog), float(r_analog)]
+        print('== SENDING [LS: (%.2f, %.2f) 😤 RS: (%.2f, %.2f)] ==' % (ls_x, ls_y, rs_x, rs_y))
+        print('-- SENDING [L_ANALOG: %.2f 😤 R_ANALOG: %.2f] --' % (l_analog, r_analog))
+        self.publisher_.publish(msg)
 
 
 

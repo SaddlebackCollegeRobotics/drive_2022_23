@@ -180,22 +180,20 @@ def calib_motor(odrv_num, axis_num):
     # to store these values, do motor.config.pre_calibrated = True, as we do below.
     axis.requested_state = AXIS_STATE_MOTOR_CALIBRATION
     # Sleep to allow the motor to finish the calibrate process.
-    print("OdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
     
-    print("OdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     
     
     # If there was an error during motor calibration, exit and link to error list.
     if axis.motor.error != 0:
         logger.error("Error at motor calibration 😢")
-        print("Odrive: ", odrv_num, "Axis: ", axis_num)
-        print(axis.motor.error)
-        print("hold ctrl  v")
+        print("\t> Error: ", axis.motor.error)
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
-        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        # print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
     #================================================================================
@@ -204,32 +202,31 @@ def calib_motor(odrv_num, axis_num):
     # This stores motor.config.phase_resistance and motor.config.phase_inductance to the odrive memory.
     logger.debug("Setting motor to precalibrated... 😎️")
     axis.motor.config.pre_calibrated = True
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
 
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     time.sleep(5)
     
 
     # Rotate the motor in lockin and calibrate hall polarity
     logger.debug("Calibrating Hall Polarity... 🤞")
     axis.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
 
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     time.sleep(5)
 
     # If there was an error during encoder polarity calibration, exit and link to error list.
     if axis.encoder.error != 0:
         logger.error("Error at Calibrating Hall Polarity 😢")
-        print(axis.encoder.error)
-        print("hold ctrl  v")
+        print("\t> Error: ", axis.encoder.error)
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
-        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        # print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
 
@@ -237,21 +234,20 @@ def calib_motor(odrv_num, axis_num):
     # Note: The phase offset is not calibrated at this time, so the map is only relative
     logger.debug("Calibrating Hall Phase... 🤞")
     axis.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
     
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     time.sleep(5)
 
     # If there was an error during encoder phase calibration, exit and link to error list.
     if axis.encoder.error != 0:
         logger.error("Error at Calibrating Hall Phase 😢")
-        print(axis.encoder.error)
-        print("hold ctrl")
+        print("\t> Error: ", axis.encoder.error)
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
-        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        # print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
     
@@ -262,32 +258,31 @@ def calib_motor(odrv_num, axis_num):
     # If successful, encoder calibration will make the encoder.is_ready == True
     logger.debug("Calibrating Hall Offset... 🤞")
     axis.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
 
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     time.sleep(5)
 
     # If there was an error during encoder offset calibration, exit and link to error list.
     if axis.encoder.error != 0:
         logger.error("Error at Calibrating Hall Offset 😢")
-        print(axis.encoder.error)
-        print("hold ctrl")
+        print("\t> Error: ", axis.encoder.error)
         # To regenerate this file, nagivate to the top level of the ODrive repository and run:
         # python Firmware/interface_generator_stub.py --definitions Firmware/odrive-interface.yaml --template tools/enums_template.j2 --output tools/odrive/enums.py
-        print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
+        # print("https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py")
         sys.exit()
 
 
 
     logger.debug("Setting encoder to precalibrated... 😎️")
     axis.encoder.config.pre_calibrated = True
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     while axis.current_state != AXIS_STATE_IDLE:
         time.sleep(2)
 
-    print("\nOdriveSN: ",odrv_num, "\nState: ", axis.current_state, "\nAxis: ", axis_num)
+    print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, "<")
     time.sleep(5)
 
     logger.debug("trying to save...")
@@ -317,29 +312,29 @@ def calibrate_all_motors(odrv0, odrv1):
 
 
     t00 = threading.Thread(target=calib_motor, args=(odrv0, 0)) 
-    print("created thread 00")
+    print("> Odrv0 [ M0 ] - Created thread O0_M0")
     t01 = threading.Thread(target=calib_motor, args=(odrv0, 1)) 
-    print("created thread 01")
+    print("> Odrv0 [ M1 ] - Created thread O0_M1")
 
     t10 = threading.Thread(target=calib_motor, args=(odrv1, 0)) 
-    print("created thread 10")
+    print("> Odrv1 [ M0 ] - Created thread O1_M0")
     t11 = threading.Thread(target=calib_motor, args=(odrv1, 1)) 
-    print("created thread 11")
+    print("> Odrv1 [ M1 ] - Created thread O1_M1")
 
 
 
     t00.start()
-    print("thread 00 started")
+    print("-- Thread O0_M0 started --")
     time.sleep(1)
     t01.start()
-    print("thread 01 started")
+    print("-- Thread O0_M1 started --")
     time.sleep(1)
 
     t10.start()
-    print("thread 10 started")
+    print("-- Thread O1_M0 started --")
     time.sleep(1)
     t11.start()
-    print("thread 11 started")
+    print("-- Thread O1_M1 started --")
     time.sleep(1)
 
 
@@ -349,5 +344,5 @@ def calibrate_all_motors(odrv0, odrv1):
     t10.join()
     t11.join()
 
-    print("all threads done 😎️ 😎️ 😎️ 😎️")
-    print("\n\n\nBEGINNING DRIVE CONTROL\n\n\n")
+    print("▷ All threads done 😎️ 😎️ 😎️ 😎️")
+    print("\n\n\n>>> BEGINNING DRIVE CONTROL <<<\n\n\n")

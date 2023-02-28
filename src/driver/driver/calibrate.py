@@ -67,9 +67,7 @@ def save_config(odrv_num):
 
 def config_motor(odrv_num, axis_num, clear, powerDC):
     odrv = odrive.find_any(serial_number=odrv_num)
-    axis = getattr(odrv, f'axis{axis_num}')
     vbus_voltage = odrv.vbus_voltage
-
 
 
     # ==== CLEAR PREVIOUS CONFIGURATION ================================
@@ -79,6 +77,8 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
     print(">>> ODrive's Voltage:\t", vbus_voltage, "<<<")
 
 
+    axis = getattr(odrv, f'axis{axis_num}')
+    
 
     # ==== ODRIVE CONFIGURATION ========================================
     # ==================================================================

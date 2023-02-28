@@ -197,15 +197,6 @@ def get_all_odrives():
 
 
 
-def debug_idle_log(odrv_num, axis_num, axis):
-    print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
-    while axis.current_state != AXIS_STATE_IDLE:
-        time.sleep(2)
-    print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
-    time.sleep(5)
-
-
-
 def calib_motor(odrv_num, axis_num):
     odrv = odrive.find_any(serial_number=odrv_num)
     axis = getattr(odrv, f'axis{axis_num}')
@@ -213,71 +204,54 @@ def calib_motor(odrv_num, axis_num):
     axis.controller.config.input_mode = 1   # INPUT_MODE_PASSTHROUGH & INPUT_MODE_VEL_RAMP
     axis.controller.config.control_mode = 2 # CONTROL_MODE_VELOCITY_CONTROL
 
+    # ---- Target List ------------------------------------------------
+    calib_targets = {
+        "Motor Calibration" : [AXIS_STATE_MOTOR_CALIBRATION, axis.motor.error],
+        "Hall Polarity"     : [AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION, axis.encoder.error],
+        "Hall Phase"        : [AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION, axis.encoder.error],
+        "Hall Offset"       : [AXIS_STATE_ENCODER_OFFSET_CALIBRATION, axis.encoder.error]
+    }
+
+    # ---- Calibration Function ---------------------------------------
+    def calib(target : str):
+        logger.debug("Calibrating {}... 🤞".format(target))
+        axis.requested_state = calib_targets[target][0]
+        debug_idle_log()
+        if calib_targets[target][1] != 0:
+            logger.error("Error at {} 😢".format(target))
+            print("\t> Error: ", calib_targets[target][1])
+            sys.exit()
+
+    # ---- Pre-Calibration Function -----------------------------------
+    def pre_calib(target : str):
+        logger.debug("Setting {} to precalibrated... 😎️".format(target))
+        axis.motor.config.pre_calibrated = True
+        debug_idle_log()
+
+    # ---- Debugging Function -----------------------------------------
+    def debug_idle_log():
+        print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
+        while axis.current_state != AXIS_STATE_IDLE:
+            time.sleep(2)
+        print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
+        time.sleep(5)
+        
 
     # ==================================================================
     # NOTE:
     #   The following code is for calibrating the motor and it NEEDS TO
     #   BE IN THIS ORDER. If you change the order, the motor will yell at
     #   you and you will cry.
-    # ==================================================================
+    # ==================================================================\
+    calib("Motor Calibration")
+    pre_calib("motor")
+    calib("Hall Polarity")
+    calib("Hall Phase")
+    calib("Hall Offset")
+    pre_calib("encoder")
 
 
-    # ==== MOTOR CALIBRATION ===========================================
-    axis.requested_state = AXIS_STATE_MOTOR_CALIBRATION     # MEASURING PHASE RESISTANCE/INDUCTANCE OF MOTOR
-    debug_idle_log(odrv_num, axis_num, axis)
-    if axis.motor.error != 0:
-        logger.error("Error at motor calibration 😢")
-        print("\t> Error: ", axis.motor.error)
-        sys.exit()
-
-
-    # ==== ENCODER CALIBRATION ==========================================
-    logger.debug("Setting motor to precalibrated... 😎️")
-    axis.motor.config.pre_calibrated = True                 # This stores motor.config.phase_resistance and motor.config.phase_inductance to the odrive memory.
-    debug_idle_log(odrv_num, axis_num, axis)
-    
-
-    logger.debug("Calibrating Hall Polarity... 🤞")
-    axis.requested_state = AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION     # Rotate the motor in lockin and calibrate hall polarity
-    debug_idle_log(odrv_num, axis_num, axis)
-    if axis.encoder.error != 0:
-        logger.error("Error at Calibrating Hall Polarity 😢")
-        print("\t> Error: ", axis.encoder.error)
-        sys.exit()
-
-
-    logger.debug("Calibrating Hall Phase... 🤞")
-    axis.requested_state = AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
-    debug_idle_log(odrv_num, axis_num, axis)
-    if axis.encoder.error != 0:
-        logger.error("Error at Calibrating Hall Phase 😢")
-        print("\t> Error: ", axis.encoder.error)
-        sys.exit()
-
-    
-    logger.debug("Calibrating Hall Offset... 🤞")
-    axis.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
-    debug_idle_log(odrv_num, axis_num, axis)
-    if axis.encoder.error != 0:
-        logger.error("Error at Calibrating Hall Offset 😢")
-        print("\t> Error: ", axis.encoder.error)
-        sys.exit()
-
-
-    logger.debug("Setting encoder to precalibrated... 😎️")
-    axis.encoder.config.pre_calibrated = True
-    debug_idle_log(odrv_num, axis_num, axis)
-
-
-    logger.debug("Trying to save...")
-    print("\tSaving manual configuration and rebooting... 😎️")
-    try:
-        odrv.save_configuration()
-
-    except ObjectLostError:
-        pass
-    print("\tManual configuration saved.")
-    logger.debug("saved...")
+    save_config(odrv_num)
     odrv = odrive.find_any(serial_number=odrv_num)
     axis = getattr(odrv, f'axis{axis_num}')
 
@@ -292,7 +266,6 @@ def calibrate_all_motors(odrv0, odrv1):
     config_motor(odrv1, 1, False, False)
     
 
-
     t00 = threading.Thread(target=calib_motor, args=(odrv0, 0)) 
     print("> Odrv0 [ M0 ] - Created thread O0_M0")
     t01 = threading.Thread(target=calib_motor, args=(odrv0, 1)) 
@@ -302,7 +275,6 @@ def calibrate_all_motors(odrv0, odrv1):
     print("> Odrv1 [ M0 ] - Created thread O1_M0")
     t11 = threading.Thread(target=calib_motor, args=(odrv1, 1)) 
     print("> Odrv1 [ M1 ] - Created thread O1_M1")
-
 
 
     t00.start()

@@ -36,6 +36,7 @@ from fibre.libfibre import ObjectLostError
 
 
 
+
 def erase_config(odrv_num, clear):
     if clear:   # I'd suggest not touching this if and try catch throw
         try:
@@ -49,6 +50,7 @@ def erase_config(odrv_num, clear):
 
 
 
+
 def save_config(odrv_num):
     odrv = odrive.find_any(serial_number=odrv_num)
     print("Saving manual configuration and rebooting...")
@@ -58,6 +60,7 @@ def save_config(odrv_num):
     except ObjectLostError:
         print("\tFailed to Save Configuration... 📝")
         pass
+
 
 
 
@@ -177,6 +180,7 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
 
 
 
+
 def get_all_odrives():
     # Pull all connected devices ID to the list
     odrivesSerialList = []
@@ -197,7 +201,12 @@ def get_all_odrives():
 
 
 
+
+
 def calib_motor(odrv_num, axis_num):
+    # ==================================================================
+    # PREPROCESSING
+    # ==================================================================
     odrv = odrive.find_any(serial_number=odrv_num)
     axis = getattr(odrv, f'axis{axis_num}')
 
@@ -205,36 +214,36 @@ def calib_motor(odrv_num, axis_num):
     axis.controller.config.control_mode = 2 # CONTROL_MODE_VELOCITY_CONTROL
 
     # ---- Target List ------------------------------------------------
-    calib_targets = {
-        "Motor Calibration" : [AXIS_STATE_MOTOR_CALIBRATION, axis.motor.error],
-        "Hall Polarity"     : [AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION, axis.encoder.error],
-        "Hall Phase"        : [AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION, axis.encoder.error],
-        "Hall Offset"       : [AXIS_STATE_ENCODER_OFFSET_CALIBRATION, axis.encoder.error]
-    }
-
-    axis_target = {
+    a = {
         "motor" : axis.motor,
         "encoder" : axis.encoder
+    }
+
+    c = {
+        "Motor State"   : [AXIS_STATE_MOTOR_CALIBRATION, a["motor"].error],
+        "Hall Polarity" : [AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION, a["encoder"].error],
+        "Hall Phase"    : [AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION, a["encoder"].error],
+        "Hall Offset"   : [AXIS_STATE_ENCODER_OFFSET_CALIBRATION, a["encoder"].error]
     }
 
     # ---- Calibration Function ---------------------------------------
     def calib(target : str):
         logger.debug("Calibrating {}... 🤞".format(target))
-        axis.requested_state = calib_targets[target][0]
-        debug_idle_log()
-        if calib_targets[target][1] != 0:
+        axis.requested_state = c[target][0]
+        log_state()
+        if c[target][1] != 0:
             logger.error("Error at {} 😢".format(target))
-            print("\t> Error: ", calib_targets[target][1])
+            print("\t> Error: ", c[target][1])
             sys.exit()
 
     # ---- Pre-Calibration Function -----------------------------------
     def pre_calib(target : str):
         logger.debug("Setting {} to precalibrated... 😎️".format(target))
-        axis_target[target].config.pre_calibrated = True
-        debug_idle_log()
+        a[target].config.pre_calibrated = True
+        log_state()
 
     # ---- Debugging Function -----------------------------------------
-    def debug_idle_log():
+    def log_state():
         print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
         while axis.current_state != AXIS_STATE_IDLE:
             time.sleep(2)
@@ -247,8 +256,8 @@ def calib_motor(odrv_num, axis_num):
     #   The following code is for calibrating the motor and it NEEDS TO
     #   BE IN THIS ORDER. If you change the order, the motor will yell at
     #   you and you will cry.
-    # ==================================================================\
-    calib("Motor Calibration")
+    # ==================================================================
+    calib("Motor State")
     pre_calib("motor")
     calib("Hall Polarity")
     calib("Hall Phase")
@@ -259,6 +268,8 @@ def calib_motor(odrv_num, axis_num):
     save_config(odrv_num)
     odrv = odrive.find_any(serial_number=odrv_num)
     axis = getattr(odrv, f'axis{axis_num}')
+
+
 
 
 
@@ -288,7 +299,6 @@ def calibrate_all_motors(odrv0, odrv1):
     t01.start()
     print("-- Thread O0_M1 started --")
     time.sleep(1)
-
     t10.start()
     print("-- Thread O1_M0 started --")
     time.sleep(1)
@@ -299,9 +309,9 @@ def calibrate_all_motors(odrv0, odrv1):
 
     t00.join()
     t01.join()
-
     t10.join()
     t11.join()
+    
 
     print("▷ All threads done 😎️ 😎️ 😎️ 😎️")
     print("\n\n\n>>> BEGINNING DRIVE CONTROL <<<\n\n\n")

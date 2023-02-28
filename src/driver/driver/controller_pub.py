@@ -59,6 +59,9 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 #       make pub                                <------ Make file that sources and runs for you
 # ========================================================================================
 class ControllerPub(Node):
+    # CONSTANTS
+    TIMER_PERIOD = 0.1
+
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
@@ -66,10 +69,8 @@ class ControllerPub(Node):
         super().__init__('controller_pub')                                              # Create node with name 'controller_pub'
 
         # Publishing                                [type]                [topic]     [queue_size]
-        self.publisher_ = self.create_publisher(Float64MultiArray, 'drive/analog_control', 10)      # Create publisher to publish controller input
-
-        timer_period = 0.1                                                              # Timer period in seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)               # Create timer to publish controller input
+        self.publisher_ = self.create_publisher(Float64MultiArray, 'drive/analog_control', 10)      # Create publisher to publish controller input                                                          # Timer period in seconds
+        self.timer = self.create_timer(ControllerPub.TIMER_PERIOD, self.timer_callback)             # Create timer to publish controller input
 
         # Note: I disabled button callbacks because they were causing the program to crash
         #       I think it was because the callbacks were trying to access the ROS2 node
@@ -104,24 +105,6 @@ class ControllerPub(Node):
 
         if l1 or r1:
             r_analog = l_analog
-
-        # hold_right_stick = l2 == 0 and r2 > 0
-
-        # if hold_right_stick and (rs_x != 0 and ls_y == 0):      # Stationary turn
-        #     (l_analog, r_analog) = (rs_x, -rs_x)
-
-        # elif hold_left_stick and (rs_x > 0):                    # Turning right while moving
-        #     (l_analog, r_analog) = (ls_y, ls_y * abs(rs_x/4))
-
-        # elif hold_left_stick and (rs_x < 0):                    # Turning left while moving
-        #     (l_analog, r_analog) = (ls_y * abs(rs_x/4), ls_y)
-
-        # elif hold_left_stick and (not idle):                    # Moving forward or backward
-        #     (l_analog, r_analog) = (ls_y, ls_y)
-
-        # else:                                                   # Idle
-        #     (l_analog, r_analog) = (0, 0)
-
 
         msg.data = [l_analog, r_analog]
         print('== SENDING [LS: (%.2f, %.2f) 😤 RS: (%.2f, %.2f)] ==' % (ls_x, ls_y, rs_x, rs_y))

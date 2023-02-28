@@ -22,12 +22,7 @@ import rclpy                                # ROS2 Python API
 from rclpy.node import Node                 # ROS2 Node API
 from .calibrate import *                    # Odrive calibration API by Max Rehm, and Matin Qurbanzadeh
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
-
-
-MIN_SPEED = -35     # Max negative velocity (ik bad naming convention)
-MAX_SPEED = 35      # Max positive velocity
-CREMENT = 5         # Speed increment/decrement value
-
+from time import perf_counter               # Used for timing
 
 
 # ==== ROS2 Subscriber Node ==============================================================
@@ -54,10 +49,17 @@ CREMENT = 5         # Speed increment/decrement value
 #       make sub                                <------ Make file that sources and runs for you
 # ========================================================================================
 class DriveReceiverSub(Node):
+    # CONSTANTS
+    MIN_SPEED = -35                         # Max negative velocity (ik bad naming convention)
+    MAX_SPEED = 35                          # Max positive velocity
+    LAST_CALLBACK = perf_counter()          # Time of last callback
+    SIGNAL_TIMEOUT = 3                      # Timeout for signal
+    TIMER_PERIOD = 0.1                      # Timer period in seconds
+
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
-    def __init__(self, odrv_0, odrv_1=None):
+    def __init__(self, odrv_0=None, odrv_1=None):
         super().__init__('drive_receiver_sub')
 
         self.subscription = self.create_subscription(           # Create subscription to 'controls' topic
@@ -65,15 +67,13 @@ class DriveReceiverSub(Node):
             'drive/analog_control',                             # Topic name
             self.listener_callback,                             # Callback function to call when message is received
             10)                                                 # Queue size
-        self.subscription                                       # Prevent unused variable warning
 
-        self.odrv_0 = odrv_0
-        self.odrv_1 = odrv_1
+        self.odrv0 = odrive.find_any(serial_number=odrv_0)      # Get odrive object
+        self.odrv1 = odrive.find_any(serial_number=odrv_1)      # Get odrive object
 
-        self.odrv0 = None
-        self.odrv1 = None
+        self.speed = DriveReceiverSub.MAX_SPEED                 # Set speed to max speed
 
-        self.speed = MAX_SPEED # Test for now
+        self.timer = self.create_timer(DriveReceiverSub.TIMER_PERIOD, self.subscription_heartbeat)
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -107,17 +107,21 @@ class DriveReceiverSub(Node):
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Safety check
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    def subscription_heartbeat(self):
+        if perf_counter() - DriveReceiverSub.LAST_CALLBACK > DriveReceiverSub.SIGNAL_TIMEOUT:
+            self.set_motor_velocity(0, 0)
+            self.idle_state()
+
+
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Listener Callback
     #       Called when a message is received on the 'controls' topic
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def listener_callback(self, msg):
 
         (l_analog, r_analog) = msg.data
-
-        self.odrv0 = odrive.find_any(serial_number=self.odrv_0)       # Get odrive object
-        if self.odrv_1:
-            self.odrv1 = odrive.find_any(serial_number=self.odrv_1)   # Get odrive object
-
 
         if l_analog == 0 and r_analog == 0:
             self.set_motor_velocity(0, 0)

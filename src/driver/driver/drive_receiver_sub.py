@@ -100,10 +100,10 @@ class DriveReceiverSub(Node):
     # Set motor speed
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def set_motor_velocity(self, left_speed, right_speed):
-        self.odrv1.axis0.controller.input_vel = -left_speed
-        self.odrv1.axis1.controller.input_vel = -left_speed
         self.odrv0.axis0.controller.input_vel = right_speed
         self.odrv0.axis1.controller.input_vel = right_speed
+        self.odrv1.axis0.controller.input_vel = -left_speed
+        self.odrv1.axis1.controller.input_vel = -left_speed
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

@@ -78,7 +78,7 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
 
 
     axis = getattr(odrv, f'axis{axis_num}')
-    
+
 
     # ==== ODRIVE CONFIGURATION ========================================
     # ==================================================================
@@ -244,10 +244,10 @@ def calib_motor(odrv_num, axis_num):
 
     # ---- Debugging Function -----------------------------------------
     def log_state():
-        print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
+        print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, " <")
         while axis.current_state != AXIS_STATE_IDLE:
             time.sleep(2)
-        print("\t> OdriveSN: ",odrv_num, " -- Axis: ", axis_num, " -- State: ", axis.current_state, " <")
+        print("\t> OdriveSN: ",odrv_num, "-- Axis: ", axis_num, "-- State: ", axis.current_state, " <")
         time.sleep(5)
         
 

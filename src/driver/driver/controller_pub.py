@@ -28,7 +28,7 @@ from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message typ
 
 
 
-AXIS_DEADZONE = 0.3                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
+AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks

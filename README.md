@@ -5,7 +5,7 @@
 - Drive repository for the 2022-23 season of URC by SC Robotics. This repository contains the code for driving the rover through using a **PS4** controller.
 - The drive system is written in *Python* and uses **ROS2** for communication between the rover and the controller.
 - The drive system uses **2 Odrive** drivers to control the motors on the rover. Totalling **4 NEOs Brushless DC Motors**.
-- We also have a local development environment that can be used to test the code before deploying it to the rover. It is on the branch `local-development`.
+- We also have a local development environment that can be used to test the code before deploying it to the rover. It is on the file `src/local.py`.
 
 ## Installation and Setup
 ### Setup

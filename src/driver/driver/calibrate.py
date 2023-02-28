@@ -212,6 +212,11 @@ def calib_motor(odrv_num, axis_num):
         "Hall Offset"       : [AXIS_STATE_ENCODER_OFFSET_CALIBRATION, axis.encoder.error]
     }
 
+    axis_target = {
+        "motor" : axis.motor,
+        "encoder" : axis.encoder
+    }
+
     # ---- Calibration Function ---------------------------------------
     def calib(target : str):
         logger.debug("Calibrating {}... 🤞".format(target))
@@ -225,7 +230,7 @@ def calib_motor(odrv_num, axis_num):
     # ---- Pre-Calibration Function -----------------------------------
     def pre_calib(target : str):
         logger.debug("Setting {} to precalibrated... 😎️".format(target))
-        axis.motor.config.pre_calibrated = True
+        axis_target[target].config.pre_calibrated = True
         debug_idle_log()
 
     # ---- Debugging Function -----------------------------------------

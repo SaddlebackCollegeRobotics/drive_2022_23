@@ -42,7 +42,7 @@ def erase_config(odrv_num, clear):
         try:
             odrive.find_any(serial_number=odrv_num).erase_configuration()
             print("\tErased Previous Configuration... 🗑️")
-        except:
+        except ObjectLostError:
             print("\tFailed to Erased Previous Configuration... 🗑️")
             pass
     return odrive.find_any(serial_number=odrv_num)

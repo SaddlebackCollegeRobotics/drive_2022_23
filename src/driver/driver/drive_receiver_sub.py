@@ -22,7 +22,6 @@ import rclpy                                # ROS2 Python API
 from rclpy.node import Node                 # ROS2 Node API
 from .calibrate import *                    # Odrive calibration API by Max Rehm, and Matin Qurbanzadeh
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
-from time import perf_counter               # Used for timing
 
 
 # ==== ROS2 Subscriber Node ==============================================================
@@ -52,9 +51,6 @@ class DriveReceiverSub(Node):
     # CONSTANTS
     MIN_SPEED = -35                         # Max negative velocity (ik bad naming convention)
     MAX_SPEED = 35                          # Max positive velocity
-    LAST_CALLBACK = perf_counter()          # Time of last callback
-    SIGNAL_TIMEOUT = 3                      # Timeout for signal
-    TIMER_PERIOD = 0.1                      # Timer period in seconds
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
@@ -72,8 +68,6 @@ class DriveReceiverSub(Node):
         self.odrv1 = odrive.find_any(serial_number=odrv_1)      # Get odrive object
 
         self.speed = DriveReceiverSub.MAX_SPEED                 # Set speed to max speed
-
-        self.timer = self.create_timer(DriveReceiverSub.TIMER_PERIOD, self.subscription_heartbeat)
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -104,15 +98,6 @@ class DriveReceiverSub(Node):
         self.odrv0.axis1.controller.input_vel = right_speed
         self.odrv1.axis0.controller.input_vel = -left_speed
         self.odrv1.axis1.controller.input_vel = -left_speed
-
-
-    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Safety check
-    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    def subscription_heartbeat(self):
-        if perf_counter() - DriveReceiverSub.LAST_CALLBACK > DriveReceiverSub.SIGNAL_TIMEOUT:
-            self.set_motor_velocity(0, 0)
-            self.idle_state()
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

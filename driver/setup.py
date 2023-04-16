@@ -1,3 +1,5 @@
+import glob
+import os
 from setuptools import setup
 
 package_name = 'driver'
@@ -7,9 +9,15 @@ setup(
     version='69.420.80085',
     packages=[package_name],
     data_files=[
+        # Install marker file in the package index
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
+        # Include package.xml
         ('share/' + package_name, ['package.xml']),
+        # Include launch file. TODO add launch file
+        #('share/' + package_name, ['launch/<filename>.launch.py']),
+        # Include gamepad config file
+        ('share/' + package_name, ['driver/gamepads.config']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,6 +29,7 @@ setup(
     entry_points={
         'console_scripts': [
             'controller_pub = driver.controller_pub:main',
+            'gamepad_diff_drive = driver.gamepad_diff_drive:main',
             'drive_receiver_sub = driver.drive_receiver_sub:main',
         ],
     },

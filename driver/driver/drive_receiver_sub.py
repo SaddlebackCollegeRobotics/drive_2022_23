@@ -49,8 +49,8 @@ from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message typ
 # ========================================================================================
 class DriveReceiverSub(Node):
     # CONSTANTS
-    MIN_SPEED = -35                         # Max negative velocity (ik bad naming convention)
-    MAX_SPEED = 35                          # Max positive velocity
+    MIN_SPEED = -30                         # Max negative velocity (ik bad naming convention)
+    MAX_SPEED = 30                          # Max positive velocity
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
@@ -110,7 +110,7 @@ class DriveReceiverSub(Node):
 
         if l_analog == 0 and r_analog == 0:
             self.set_motor_velocity(0, 0)
-            self.idle_state() 
+            # self.idle_state() 
         else:
             self.close_loop_control()
             self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)

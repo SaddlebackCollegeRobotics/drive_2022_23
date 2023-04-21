@@ -67,7 +67,10 @@ class ControllerPub(Node):
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('gamepad_diff_drive')                                              # Create node with name 'controller_pub'
+        super().__init__('gamepad_diff_drive')       
+        self.last_l_analog = -1
+        self.last_r_analog = -1
+                                               # Create node with name 'controller_pub'
 
         # ros2_controller listens for twist messages on /diff_cont/cmd_vel_unstamped
         # Publishing                            [type]  [topic]                        [queue_size]
@@ -119,7 +122,10 @@ class ControllerPub(Node):
         msg.linear.x = l_analog
         msg.angular.z = r_analog
 
-        print(f'== SENDING [LS: ${msg.linear.x} 😤 RS: ${msg.angular.z}  ==')
+        if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
+            print(f'== SENDING [LS: ${msg.linear.x} 😤 RS: ${msg.angular.z}  ==')
+
+        self.last_l_analog, self.last_r_analog = l_analog, r_analog
 
         self.publisher_.publish(msg)
 

@@ -49,8 +49,9 @@ from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message typ
 # ========================================================================================
 class DriveReceiverSub(Node):
     # CONSTANTS
-    MIN_SPEED = -35                         # Max negative velocity (ik bad naming convention)
-    MAX_SPEED = 35                          # Max positive velocity
+    MIN_SPEED = -30                         # Max negative velocity (ik bad naming convention)
+    MAX_SPEED = 30                          # Max positive velocity
+    MIN_VOLTAGE = 11.4                      # Cut off battery voltage
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
@@ -67,7 +68,29 @@ class DriveReceiverSub(Node):
         self.odrv0 = odrive.find_any(serial_number=odrv_0)      # Get odrive object
         self.odrv1 = odrive.find_any(serial_number=odrv_1)      # Get odrive object
 
+        self.vbus_voltage0 = self.odrv0.vbus_voltage
+        self.vbus_voltage1 = self.odrv1.vbus_voltage
+
         self.speed = DriveReceiverSub.MAX_SPEED                 # Set speed to max speed
+
+
+
+    # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    # Voltage Check
+    # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+    def voltage_check(self):
+        self.vbus_voltage0 = self.odrv0.vbus_voltage
+        self.vbus_voltage1 = self.odrv1.vbus_voltage
+
+        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+        if self.vbus_voltage0 <= DriveReceiverSub.MIN_VOLTAGE or self.vbus_voltage1 <= DriveReceiverSub.MIN_VOLTAGE:
+            print("🛑🛑🛑 Battery is low, please charge battery 🛑🛑🛑")
+            print("\tOdrive0 Voltage Reading: " + str(self.vbus_voltage0) + " V")
+            print("\tOdrive1 Voltage Reading: " + str(self.vbus_voltage1) + " V")
+        else:
+            print("🔋🔋🔋 Battery is good, you may drive 🔋🔋🔋")
+            print("\tOdrive0 Voltage Reading: " + str(self.vbus_voltage0) + " V")
+            print("\tOdrive1 Voltage Reading: " + str(self.vbus_voltage1) + " V")
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -115,8 +138,10 @@ class DriveReceiverSub(Node):
             self.close_loop_control()
             self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)
 
-        print('== Left Analog: %.2f 😫 Right Analog: %.2f ==' % (l_analog, r_analog))
-        print('-- Left Speed: %.2f 😫 Right Speed: %.2f --' % (l_analog * self.speed, r_analog * self.speed))
+        self.voltage_check()
+        print("📶📶📶 Signal Received 📶📶📶")
+        print('\tLeft Analog: %.2f 😫 Right Analog: %.2f' % (l_analog, r_analog))
+        print('\tLeft Speed: %.2f 😫 Right Speed: %.2f' % (l_analog * self.speed, r_analog * self.speed))
 
 
 

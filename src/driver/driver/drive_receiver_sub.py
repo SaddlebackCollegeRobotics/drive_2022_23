@@ -133,7 +133,7 @@ class DriveReceiverSub(Node):
 
         if l_analog == 0 and r_analog == 0:
             self.set_motor_velocity(0, 0)
-            self.idle_state() 
+            # self.idle_state() 
         else:
             self.close_loop_control()
             self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)

@@ -26,10 +26,13 @@ from . import gamepad_input as gmi          # Gamepad input API by Cameron Rosen
 from .buttons import Buttons                # Gamepad button callbacks
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 from geometry_msgs.msg import Twist         # ROS2 control message
+import os                                   # OS API
 
 
 
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
+
+gmi.setConfigFile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../share/driver/gamepads.config'))
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks

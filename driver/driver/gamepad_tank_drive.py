@@ -65,12 +65,13 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 class GamepadDrive(Node):
     # CONSTANTS
     TIMER_PERIOD = 0.1
+    WHEEL_SEPARATION = 0.38735 * 2
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('gamepad_diff_drive')       
+        super().__init__('gamepad_tank_drive')       
         self.last_l_analog = -1
         self.last_r_analog = -1
                                                # Create node with name 'controller_pub'
@@ -122,8 +123,9 @@ class GamepadDrive(Node):
         if enable_right:
             r_analog = float(-rs_x)
 
-        msg.linear.x = l_analog
-        msg.angular.z = r_analog
+
+        msg.linear.x = (r_analog - l_analog) / 2
+        msg.angular.z = (r_analog - l_analog) / GamepadDrive.WHEEL_SEPARATION
 
         if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
             print(f'== SENDING [LS: ${msg.linear.x} 😤 RS: ${msg.angular.z}  ==')

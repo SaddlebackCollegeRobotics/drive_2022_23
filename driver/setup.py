@@ -30,6 +30,7 @@ setup(
         'console_scripts': [
             'controller_pub = driver.controller_pub:main',
             'gamepad_diff_drive = driver.gamepad_diff_drive:main',
+            'gamepad_tank_drive = driver.gamepad_tank_drive:main',
             'drive_receiver_sub = driver.drive_receiver_sub:main',
         ],
     },

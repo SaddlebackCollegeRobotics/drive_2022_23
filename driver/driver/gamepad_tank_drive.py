@@ -1,23 +1,24 @@
-# ========================================================================================
-# Author:   Jasper Doan     @wluxie
-# Date:     02/01/2023
-# ========================================================================================
+""" ======================================================================================
 # Description:
-#   This is the ROS2 node that publishes the controller input to the ROS2 topic 'controls'
-#       The topic is a Float64MultiArray with 2 elements (in a [1x2] matrix, but stored as List)
-#           ___                 ___
-#          | l_analog    r_analog  |
-#          |___                 ___|
+#   This is the ROS2 node that publishes the controller input to the ROS2 topic 
+#   '/diff_cont/cmd_vel_unstamped', type geometry_msgs Twist
+#    linear:
+#       x: float
+#       y: 0
+#       z: 0
+#   angular:
+#       x: 0
+#       y: 0
+#       z: float
+#           
 #   Note:
 #       The values are normalized to be between -1 and 1, deadzoned to be 0 if the value is 
 #       less than AXIS_DEADZONE, and are rounded to 2 decimal places
 #       The values are published at a rate of 10 Hz
 # ========================================================================================
 # Dependencies:
-#   - ROS2 Foxy
-#   - Python 3.8
-#   - rclpy
-# ========================================================================================
+#   - ROS2 Humble
+# ==================================================================================== """
 
 
 import rclpy                                # ROS2 Python API
@@ -29,7 +30,7 @@ from geometry_msgs.msg import Twist         # ROS2 control message
 import os                                   # OS API
 
 
-
+# ==== Controller Configuration ==========================================================
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
 gmi.setConfigFile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../share/driver/gamepads.config'))
@@ -39,33 +40,41 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 
 
 
-# ==== ROS2 Publisher Node ===============================================================
-# Brief Description:
-#   When run, this node will take in your analog/joystick controller input and publish it to
-#   the ROS2 topic 'controls' as a Float64MultiArray. We used PS4 during development, but
-#   this should work with any controller that has a left stick, right stick, and 2 triggers.
-#
-# Publish:
-#   - msg :: Float64MultiArray[2]
-#      + msg.data[0] :: l_analog          + msg.data[1] :: r_analog
-#
-# Run in Terminal:
-#   source /opt/ros/foxy/setup.bash             <------ Source ROS2 Foxy environment (if not already sourced)
-#   cd ~/drive_2022_23/src/driver/              <------ Navigate to driver package directory
-#
-#       colcon build --symlink-install          <------ Build driver package (if not already built)
-#       . install/setup.bash                    <------ Source driver package environment
-#       ros2 run driver controller_pub          <------ Run controller_pub node
-#
-#       - or - 
-#
-#       make                                    <------ Make file that builts for you
-#       make pub                                <------ Make file that sources and runs for you
+# ==== Differential Drive Robot Kinematics ===============================================
+# Title: Motion Model for the Differential Drive Robot
+# Authors: Frank Dellaert, Seth Hutchinson
+# Date: 2021
+# Availability: https://www.roboticsbook.org/S52_diffdrive_actions.html
 # ========================================================================================
+WHEEL_SEPARATION = 0.38735 * 2
+WHEEL_RADIUS = 0.194
+   
+def ddr_ik(v_x: float, omega: float, L=WHEEL_SEPARATION, r=WHEEL_RADIUS) -> tuple[float, float]:
+    """DDR inverse kinematics: calculate angular wheels speeds from desired velocity.
+    returns: (left wheel angular velocity, right wheel angular velocity)"""
+    return (v_x - (L/2)*omega)/r, (v_x + (L/2)*omega)/r  
+
+def ddr_fk(phidot_L: float, phidot_R: float, L=WHEEL_SEPARATION, r=WHEEL_RADIUS) -> tuple[float, float]:
+    """DDR forward kinematics: calculate desired velocity from angular wheels speeds.
+    returns: (linear velocity, angular velocity)"""
+    return(phidot_R+phidot_L)*r/2, (phidot_R-phidot_L)*r/L 
+
+
+
 class GamepadDrive(Node):
+    """ 
+    When run, this node will take in your analog/joystick controller input and publish 
+    it to the ROS2 topic 'controls' as a Twist message. We used PS4 during 
+    development, but this should work with any controller that has a left stick, right 
+    stick, and 2 triggers.
+     
+    Publishes:
+        geometry_msg :: Twist -- linear and angular movement commands for differential drive
+    """
+
     # CONSTANTS
     TIMER_PERIOD = 0.1
-    WHEEL_SEPARATION = 0.38735 * 2
+    PRINT_TOLERANCE = 0.0001
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
@@ -116,19 +125,18 @@ class GamepadDrive(Node):
         enable_left = l2 > 0
         enable_right = r2 > 0
 
-        l_analog, r_analog = 0.0, 0.0
+        l_analog = float(-ls_y) if enable_left else 0.0
+        r_analog = float(-rs_y) if enable_right else 0.0
 
-        if enable_left:
-            l_analog = float(-ls_y)
-        if enable_right:
-            r_analog = float(-rs_x)
+        # calculate linear and angular movement using differential drive forward kinematics
+        # using transformation equation v=rω, ω=v/r
+        msg.linear.x, msg.angular.z  = ddr_fk(l_analog/WHEEL_RADIUS, r_analog/WHEEL_RADIUS)
 
-
-        msg.linear.x = (r_analog - l_analog) / 2
-        msg.angular.z = (r_analog - l_analog) / GamepadDrive.WHEEL_SEPARATION
-
-        if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
-            print(f'== SENDING [LS: ${msg.linear.x} 😤 RS: ${msg.angular.z}  ==')
+        #if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
+        # print(f'== SENDING [left stick: ${l_analog} 😤 right stick: ${r_analog}  ==')
+        linear = msg.linear.x if abs(msg.linear.x) > self.PRINT_TOLERANCE else 0.0
+        angular = msg.angular.z if abs(msg.angular.z) > self.PRINT_TOLERANCE else 0.0
+        print(f'== SENDING [Linear: ${linear:.3} 😤 Angular: ${angular:.3}  ==')
 
         self.last_l_analog, self.last_r_analog = l_analog, r_analog
 

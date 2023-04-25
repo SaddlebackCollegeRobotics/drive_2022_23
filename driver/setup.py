@@ -18,6 +18,8 @@ setup(
         #('share/' + package_name, ['launch/<filename>.launch.py']),
         # Include gamepad config file
         ('share/' + package_name, ['driver/gamepads.config']),
+        # Include kinematics math file
+        ('share/' + package_name, ['driver/diff_drive_kinematics.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

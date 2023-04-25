@@ -23,7 +23,8 @@
 
 import rclpy                                # ROS2 Python API
 from rclpy.node import Node                 # ROS2 Node API
-from . import gamepad_input as gmi          # Gamepad input API by Cameron Rosenthal
+from . import gamepad_input as gmi          # Gamepad input API 
+from . import diff_drive_kinematics as ddr  # Differential drive robot kinematics 
 from .buttons import Buttons                # Gamepad button callbacks
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 from geometry_msgs.msg import Twist         # ROS2 control message
@@ -130,13 +131,14 @@ class GamepadDrive(Node):
 
         # calculate linear and angular movement using differential drive forward kinematics
         # using transformation equation v=rω, ω=v/r
-        msg.linear.x, msg.angular.z  = ddr_fk(l_analog/WHEEL_RADIUS, r_analog/WHEEL_RADIUS)
-
-        #if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
-        # print(f'== SENDING [left stick: ${l_analog} 😤 right stick: ${r_analog}  ==')
-        linear = msg.linear.x if abs(msg.linear.x) > self.PRINT_TOLERANCE else 0.0
-        angular = msg.angular.z if abs(msg.angular.z) > self.PRINT_TOLERANCE else 0.0
-        print(f'== SENDING [Linear: ${linear:.3} 😤 Angular: ${angular:.3}  ==')
+        msg.linear.x, msg.angular.z  = ddr.f_kinematics(
+            ddr.linear_to_angular(l_analog), ddr.linear_to_angular(r_analog)
+        )        
+        
+        if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
+            linear = msg.linear.x if abs(msg.linear.x) > self.PRINT_TOLERANCE else 0.0
+            angular = msg.angular.z if abs(msg.angular.z) > self.PRINT_TOLERANCE else 0.0
+            print(f'== SENDING [Linear: ${linear:.3} 😤 Angular: ${angular:.3}  ==')
 
         self.last_l_analog, self.last_r_analog = l_analog, r_analog
 

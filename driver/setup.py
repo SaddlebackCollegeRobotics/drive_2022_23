@@ -34,6 +34,8 @@ setup(
             'gamepad_diff_drive = driver.gamepad_diff_drive:main',
             'gamepad_tank_drive = driver.gamepad_tank_drive:main',
             'drive_receiver_sub = driver.drive_receiver_sub:main',
+            'diff_drive_conversion = driver.diff_drive_conversion:main',
+
         ],
     },
 )

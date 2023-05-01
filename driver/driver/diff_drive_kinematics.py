@@ -25,12 +25,12 @@ def linear_to_angular(linear_val: float) -> float:
 # Date: 2021
 # Availability: https://www.roboticsbook.org/S52_diffdrive_actions.html
 # ========================================================================================
-def i_kinematics(v_x: float, omega: float, L=separation, r=radius) -> tuple[float, float]:
+def i_kinematics(v_x: float, omega: float, L=separation, r=radius) -> tuple:
     """DDR inverse kinematics: calculate angular wheels speeds from desired velocity.
     returns: (left wheel angular velocity, right wheel angular velocity)"""
     return (v_x - (L/2)*omega)/r, (v_x + (L/2)*omega)/r  
 
-def f_kinematics(phidot_L: float, phidot_R: float, L=separation, r=radius) -> tuple[float, float]:
+def f_kinematics(phidot_L: float, phidot_R: float, L=separation, r=radius) -> tuple:
     """DDR forward kinematics: calculate desired velocity from angular wheels speeds.
     returns: (linear velocity, angular velocity)"""
     return (phidot_R+phidot_L)*r/2, (phidot_R-phidot_L)*r/L 

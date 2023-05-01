@@ -49,17 +49,6 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 # ========================================================================================
 WHEEL_SEPARATION = 0.38735 * 2
 WHEEL_RADIUS = 0.194
-   
-def ddr_ik(v_x: float, omega: float, L=WHEEL_SEPARATION, r=WHEEL_RADIUS) -> tuple[float, float]:
-    """DDR inverse kinematics: calculate angular wheels speeds from desired velocity.
-    returns: (left wheel angular velocity, right wheel angular velocity)"""
-    return (v_x - (L/2)*omega)/r, (v_x + (L/2)*omega)/r  
-
-def ddr_fk(phidot_L: float, phidot_R: float, L=WHEEL_SEPARATION, r=WHEEL_RADIUS) -> tuple[float, float]:
-    """DDR forward kinematics: calculate desired velocity from angular wheels speeds.
-    returns: (linear velocity, angular velocity)"""
-    return(phidot_R+phidot_L)*r/2, (phidot_R-phidot_L)*r/L 
-
 
 
 class GamepadDrive(Node):

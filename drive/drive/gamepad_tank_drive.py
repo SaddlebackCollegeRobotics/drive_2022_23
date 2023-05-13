@@ -34,11 +34,12 @@ import os                                   # OS API
 # ==== Controller Configuration ==========================================================
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
-gmi.setConfigFile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../share/driver/gamepads.config'))
+gmi.setConfigFile(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '../../../../share/drive/gamepads.config'))
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks
-
 
 
 # ==== Differential Drive Robot Kinematics ===============================================

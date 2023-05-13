@@ -15,7 +15,7 @@ loop = True
 thread = None
 
 # Set default config file path (gamepads.config in same directory as this file)
-configFile = os.path.dirname(os.path.realpath(__file__)) + "/gamepads.config"
+configFile = os.path.dirname(os.path.realpath(__file__)) + "/../config/gamepads.config"
 
 
 # Signal handler for Ctrl+C

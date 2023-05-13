@@ -18,25 +18,24 @@
 #   - Python 3.8
 #   - rclpy
 # ========================================================================================
-
+import os                                   # OS API
 
 import rclpy                                # ROS2 Python API
 from rclpy.node import Node                 # ROS2 Node API
-from . import gamepad_input as gmi          # Gamepad input API by Cameron Rosenthal
-from .buttons import Buttons                # Gamepad button callbacks
-from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
+from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message
 from geometry_msgs.msg import Twist         # ROS2 control message
-import os                                   # OS API
 
-
+from . import gamepad_input as gmi          # Gamepad input API by Cameron R
+from .buttons import Buttons                # Gamepad button callbacks
 
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
-gmi.setConfigFile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../share/driver/gamepads.config'))
+gmi.setConfigFile(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                 '../../../../share/drive/gamepads.config'))
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks
-
 
 
 # ==== ROS2 Publisher Node ===============================================================

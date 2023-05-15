@@ -34,9 +34,9 @@ import os                                   # OS API
 # ==== Controller Configuration ==========================================================
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
-gmi.setConfigFile(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                 '../../../../share/drive/gamepads.config'))
+path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                    '../../../../install/drive/share/drive/gamepads.config')
+gmi.setConfigFile(path)
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks
@@ -113,8 +113,10 @@ class GamepadDrive(Node):
         l2, r2 = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
         l1, r1 = gmi.getButtonValue(gp, 7), gmi.getButtonValue(gp, 8)
     
-        enable_left = l2 > 0
-        enable_right = r2 > 0
+        # enable_left = l2 > 0
+        # enable_right = r2 > 0
+        enable_left = l1
+        enable_right = r1
 
         l_analog = float(-ls_y) if enable_left else 0.0
         r_analog = float(-rs_y) if enable_right else 0.0

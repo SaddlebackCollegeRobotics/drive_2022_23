@@ -30,9 +30,9 @@ from .buttons import Buttons                # Gamepad button callbacks
 
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
-gmi.setConfigFile(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                 '../../../../share/drive/gamepads.config'))
+path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                    '../../../../install/drive/share/drive/gamepads.config')
+gmi.setConfigFile(path)
 
 b = Buttons()                                                   # Create button callbacks object
 connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection callbacks
@@ -110,9 +110,11 @@ class GamepadDrive(Node):
         rs_x, rs_y = gmi.getRightStick(gp, AXIS_DEADZONE) # Get right stick
         l2, r2 = gmi.getTriggers(gp, AXIS_DEADZONE)       # Get triggers
         l1, r1 = gmi.getButtonValue(gp, 7), gmi.getButtonValue(gp, 8)
-    
-        enable_left = l2 > 0
-        enable_right = r2 > 0
+
+        # enable_left = l2 > 0
+        # enable_right = r2 > 0
+        enable_left = l1
+        enable_right = r1
 
         l_analog, r_analog = 0.0, 0.0
 
@@ -122,7 +124,7 @@ class GamepadDrive(Node):
             r_analog = float(-rs_x)
 
         msg.linear.x = l_analog
-        msg.angular.z = r_analog
+        msg.angular.z = r_analog * 2.58  # math no work without magic number
 
         if self.last_l_analog != l_analog or self.last_r_analog != r_analog: 
             print(f'== SENDING [LS: ${msg.linear.x} 😤 RS: ${msg.angular.z}  ==')

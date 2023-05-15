@@ -33,7 +33,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_diff_drive',
-            default_value='true',
+            default_value='false',
             description='True for differential drive, \
                          otherwise tank drive'),
 

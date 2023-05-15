@@ -13,11 +13,14 @@ from . import diff_drive_kinematics as ddr
 
 class DiffDriveConversion(Node):
     """Declare node for translating twist velocities to wheel velocities"""
+
+    # CONSTANTS
+    PRINT_TOLERANCE = 0.0001
+
     def __init__(self):
         super().__init__('diff_drive_conversion')
 
         self.last_vel = (0.0, 0.0)
-
         self.subscription = self.create_subscription(
             Twist,
             '/diff_cont/cmd_vel_unstamped',
@@ -33,14 +36,16 @@ class DiffDriveConversion(Node):
 
         vel_msg = Float64MultiArray()
         
-        angular_vels = ddr.i_kinematics(ddr_msg.linear.x, ddr_msg.angular.z) 
+        angular_vels = ddr.i_kinematics(
+            ddr_msg.linear.x, ddr_msg.angular.z, 0.38735 * 2, 0.194)
         vel_msg.data = [ddr.angular_to_linear(vel) for vel in angular_vels]
 
         self.publisher_.publish(vel_msg)
 
         if self.last_vel != (vel_msg.data[0], vel_msg.data[1]):
-            print(f'== COMMANDING VELOCITY [L: {vel_msg.data[0]} 😤 \
-                  R: {vel_msg.data[1]}] ==')
+            l_vel = vel_msg.data[0] if abs(vel_msg.data[0]) > self.PRINT_TOLERANCE else 0.0
+            r_vel = vel_msg.data[1] if abs(vel_msg.data[1]) > self.PRINT_TOLERANCE else 0.0
+            print(f'== COMMANDING VELOCITY [L: {l_vel} 😤 R: {r_vel}] ==')
 
         self.last_vel = (vel_msg.data[0], vel_msg.data[1])
 

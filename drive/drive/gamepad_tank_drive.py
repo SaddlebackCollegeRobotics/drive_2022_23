@@ -35,7 +35,7 @@ import os                                   # OS API
 AXIS_DEADZONE = 0.1                                             # Deadzone is 0 to 1 | Note: axis value will be 0 until you move past the deadzone
 
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                    '../../../../install/drive/share/drive/gamepads.config')
+                    '../../../../share/drive/gamepads.config')
 gmi.setConfigFile(path)
 
 b = Buttons()                                                   # Create button callbacks object

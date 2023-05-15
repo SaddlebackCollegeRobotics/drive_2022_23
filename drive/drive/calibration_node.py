@@ -34,22 +34,15 @@ class Calibration_Node(Node):
         # Give the node a name.
         super().__init__('drive_calibration_node')
 
-        # Show a yes/no dialog to confirm calibration
-        print("Calibrate ODrives? (y/n)")
-        self.calibrate_odrives = (input() == 'y')
+        odrives = get_all_odrives() # Get ODrive serial numbers using linux lsusb
+        odriveCount = len(odrives)
 
-        if self.calibrate_odrives:
-            odrives = get_all_odrives() # Get ODrive serial numbers using linux lsusb
-            odriveCount = len(odrives)
-
-            # Check if ODrives are connected
-            if odriveCount == 0 or odriveCount == 1:
-                print("Not all ODrives connected. Exiting...")
-            else:
-                print("Calibrating ODrives...")
-                calibrate_all_motors(odrives[0], odrives[1])
+        # Check if ODrives are connected
+        if odriveCount == 0 or odriveCount == 1:
+            print("Not all ODrives connected. Exiting...")
         else:
-            print("Skipping ODrive calibration")
+            print("Calibrating ODrives...")
+            calibrate_all_motors(odrives[0], odrives[1])
             
         self.quit_program_safely()
 

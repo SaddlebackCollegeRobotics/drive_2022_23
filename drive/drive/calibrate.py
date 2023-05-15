@@ -180,8 +180,9 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
 
 
 
-
+# Get serial numbers of all connected ODrives
 def get_all_odrives():
+    
     # Pull all connected devices ID to the list
     odrivesSerialList = []
     usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')

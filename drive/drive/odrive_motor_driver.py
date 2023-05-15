@@ -23,6 +23,9 @@ from rclpy.node import Node                 # ROS2 Node API
 from .calibrate import *                    # Odrive calibration API by Max Rehm, and Matin Qurbanzadeh
 from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message type
 
+# General imports
+from signal import signal, SIGINT
+import sys
 
 # ==== ROS2 Subscriber Node ==============================================================
 # Brief Description:
@@ -48,15 +51,33 @@ from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message typ
 #       make sub                                <------ Make file that sources and runs for you
 # ========================================================================================
 class DriveReceiverSub(Node):
+    
     # CONSTANTS
     MIN_SPEED = -30                         # Max negative velocity (ik bad naming convention)
     MAX_SPEED = 30                          # Max positive velocity
     MIN_VOLTAGE = 11.4                      # Cut off battery voltage
 
+
+    # Quit program safely
+    def quit_program_safely(self):
+
+        print("\nExited Safely")
+        sys.exit(0)
+
+
+    # Callback for Ctrl+C
+    def signalHandler(self, signal, frame):
+        self.quit_program_safely()
+
+
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
-    def __init__(self, odrv_0=None, odrv_1=None):
+    def __init__(self):
+
+        # Signal handler for Ctrl+C
+        signal(SIGINT, self.signalHandler)
+
         super().__init__('drive_receiver_sub')
 
         self.subscription = self.create_subscription(           # Create subscription to 'controls' topic
@@ -65,14 +86,21 @@ class DriveReceiverSub(Node):
             self.listener_callback,                             # Callback function to call when message is received
             10)                                                 # Queue size
 
-        self.odrv0 = odrive.find_any(serial_number=odrv_0)      # Get odrive object
-        self.odrv1 = odrive.find_any(serial_number=odrv_1)      # Get odrive object
+        odrives = get_all_odrives()
+        odriveCount = len(odrives)
+
+        # Check if ODrives are connected
+        if odriveCount == 0 or odriveCount == 1:
+            print("Not all ODrives connected. Exiting...")
+            self.quit_program_safely()
+        
+        self.odrv0 = odrive.find_any(serial_number=odrives[0])      # Get odrive object
+        self.odrv1 = odrive.find_any(serial_number=odrives[1])      # Get odrive object
 
         self.vbus_voltage0 = self.odrv0.vbus_voltage
         self.vbus_voltage1 = self.odrv1.vbus_voltage
 
         self.speed = DriveReceiverSub.MAX_SPEED                 # Set speed to max speed
-
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -147,16 +175,10 @@ class DriveReceiverSub(Node):
 
 
 def main(args=None):
-    odrives = get_all_odrives()
-    odrv0 = odrives[0]
-    odrv1 = odrives[1]
-
-    calibrate_all_motors(odrv0, odrv1)
-
 
     rclpy.init(args=args)
 
-    drive_receiver_sub = DriveReceiverSub(odrv0, odrv1)
+    drive_receiver_sub = DriveReceiverSub()
 
     rclpy.spin(drive_receiver_sub)
 

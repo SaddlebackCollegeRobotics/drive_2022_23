@@ -19,6 +19,12 @@ def generate_launch_description():
         output='screen',
     )
 
+    calibration_node = Node(
+        package='drive',
+        executable='calibration',
+        output='screen',
+    )
+
     motor_driver = Node(
         package='drive',
         executable='motor_driver',
@@ -27,5 +33,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         diff_drive_conversion,
+        calibration_node,
         motor_driver,
     ])

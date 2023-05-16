@@ -1,6 +1,5 @@
 # ========================================================================================
-# Author:   Jasper Doan     @wluxie
-# Date:     02/01/2023
+# Author:   Jasper Doan - @wluxie, Cameron Rosenthal - @Supernova1114
 # ========================================================================================
 # Description:
 #   This is the ROS2 node that subscribes to the ROS2 topic 'controls', it first calibrates
@@ -26,6 +25,8 @@ from std_msgs.msg import Float64MultiArray  # ROS2 Float64MultiArray message typ
 # General imports
 from signal import signal, SIGINT
 import sys
+from time import perf_counter
+
 
 # ==== ROS2 Subscriber Node ==============================================================
 # Brief Description:
@@ -90,7 +91,7 @@ class DriveReceiverSub(Node):
         odriveCount = len(odrives)
 
         # Check if ODrives are connected
-        if odriveCount == 0 or odriveCount == 1:
+        if odriveCount != 2:
             print("Not all ODrives connected. Exiting...")
             self.quit_program_safely()
         
@@ -101,6 +102,12 @@ class DriveReceiverSub(Node):
         self.vbus_voltage1 = self.odrv1.vbus_voltage
 
         self.speed = DriveReceiverSub.MAX_SPEED                 # Set speed to max speed
+
+        # Config for connection heartbeat
+        self.time_of_last_callback = perf_counter()
+        self.timer_period = 0.5 # Interval for checking heartbeat.
+        self.signal_timeout = 2 # Max time before soft stop if subscription heartbeat is not detected.
+        self.timer = self.create_timer(self.timer_period, self.subscription_heartbeat)
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -150,18 +157,34 @@ class DriveReceiverSub(Node):
         self.odrv1.axis0.controller.input_vel = -left_speed
         self.odrv1.axis1.controller.input_vel = -left_speed
 
+    
+    # Signal to stop all motors
+    def softStop(self):
+        
+        self.set_motor_velocity(0, 0)
+        self.idle_state()
+
+
+    # For safety. Check if controls are being received by subscriber callback
+    # Stop motors if subscription not being received.
+    def subscription_heartbeat(self):
+        if perf_counter() - self.time_of_last_callback > self.signal_timeout:
+            self.softStop()
+
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Listener Callback
     #       Called when a message is received on the 'controls' topic
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
     def listener_callback(self, msg):
+        
+        # Heartbeat packet
+        self.time_of_last_callback = perf_counter()
 
         (l_analog, r_analog) = msg.data
 
         if l_analog == 0 and r_analog == 0:
             self.set_motor_velocity(0, 0)
-            # self.idle_state() 
         else:
             self.close_loop_control()
             self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)

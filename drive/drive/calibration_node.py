@@ -38,7 +38,7 @@ class Calibration_Node(Node):
         odriveCount = len(odrives)
 
         # Check if ODrives are connected
-        if odriveCount == 0 or odriveCount == 1:
+        if odriveCount != 2:
             print("Not all ODrives connected. Exiting...")
         else:
             print("Calibrating ODrives...")

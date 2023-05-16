@@ -163,15 +163,23 @@ class DriveReceiverSub(Node):
     # Signal to stop all motors
     def softStop(self):
         
+        self.close_loop_control()
         self.set_motor_velocity(0, 0)
         self.idle_state()
+
+
+    # Signal to brake all motors
+    def enable_braking(self):
+        
+        self.close_loop_control()
+        self.set_motor_velocity(0, 0)
 
 
     # For safety. Check if controls are being received by subscriber callback
     # Stop motors if subscription not being received.
     def subscription_heartbeat(self):
         if perf_counter() - self.time_of_last_callback > self.signal_timeout:
-            self.softStop()
+            self.enable_braking()
 
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -185,10 +193,11 @@ class DriveReceiverSub(Node):
 
         (l_analog, r_analog) = msg.data
 
+        self.close_loop_control()
+
         if l_analog == 0 and r_analog == 0:
             self.set_motor_velocity(0, 0)
         else:
-            self.close_loop_control()
             self.set_motor_velocity(l_analog * self.speed, r_analog * self.speed)
 
         self.voltage_check()

@@ -8,7 +8,10 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
 
+# General imports
 from . import diff_drive_kinematics as ddr
+import sys
+from signal import signal, SIGINT
 
 
 class DiffDriveConversion(Node):
@@ -17,7 +20,21 @@ class DiffDriveConversion(Node):
     # CONSTANTS
     PRINT_TOLERANCE = 0.0001
 
+     # Quit program safely
+    def quit_program_safely(self):
+
+        print("\nExited Safely")
+        sys.exit(0)
+
+    # Callback for Ctrl+C
+    def signalHandler(self, signal, frame):
+        self.quit_program_safely()
+
     def __init__(self):
+
+        # Signal handler for Ctrl+C
+        signal(SIGINT, self.signalHandler)
+
         super().__init__('diff_drive_conversion')
 
         self.last_vel = (0.0, 0.0)

@@ -35,6 +35,7 @@ setup(
             f'gamepad_tank_drive = {PKG_NAME}.gamepad_tank_drive:main',
             f'motor_driver = {PKG_NAME}.odrive_motor_driver:main',
             f'diff_drive_conversion = {PKG_NAME}.diff_drive_conversion:main',
+            f'calibration = {PKG_NAME}.calibration_node:main',
         ],
     },
 )

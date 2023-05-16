@@ -63,7 +63,7 @@ class DriveReceiverSub(Node):
     def quit_program_safely(self):
 
         self.softStop()
-        
+
         print("\nExited Safely")
         sys.exit(0)
 
@@ -93,7 +93,7 @@ class DriveReceiverSub(Node):
         odriveCount = len(odrives)
 
         # Check if ODrives are connected
-        if odriveCount != 2:
+        if odriveCount == 0:
             print("Not all ODrives connected. Exiting...")
             self.quit_program_safely()
         

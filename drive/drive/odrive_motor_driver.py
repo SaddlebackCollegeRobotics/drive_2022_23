@@ -62,6 +62,8 @@ class DriveReceiverSub(Node):
     # Quit program safely
     def quit_program_safely(self):
 
+        self.softStop()
+        
         print("\nExited Safely")
         sys.exit(0)
 

@@ -23,6 +23,7 @@ def generate_launch_description():
         package='drive',
         executable='diff_drive_conversion',
         output='screen',
+        condition=UnlessCondition(calibrate)
     )
 
     calibration_node = Node(
@@ -36,7 +37,7 @@ def generate_launch_description():
         package='drive',
         executable='motor_driver',
         output='screen',
-        # condition=UnlessCondition(calibrate)
+        condition=UnlessCondition(calibrate)
     )
 
 

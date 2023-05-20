@@ -18,14 +18,14 @@ def generate_launch_description():
 
     diff_drive_controller = Node(
         package='drive',
-        executable='gamepad_diff_drive',
+        executable='diff_drive_controller',
         output='screen',
         condition=IfCondition(use_diff_drive)
     )
 
     tank_drive_controller = Node(
         package='drive',
-        executable='gamepad_tank_drive',
+        executable='tank_drive_controller',
         output='screen',
         condition=UnlessCondition(use_diff_drive)
     )

@@ -31,8 +31,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            f'gamepad_diff_drive = {PKG_NAME}.gamepad_diff_drive:main',
-            f'gamepad_tank_drive = {PKG_NAME}.gamepad_tank_drive:main',
+            f'diff_drive_controller = {PKG_NAME}.diff_drive_controller:main',
+            f'tank_drive_controller = {PKG_NAME}.tank_drive_controller:main',
             f'motor_driver = {PKG_NAME}.odrive_motor_driver:main',
             f'diff_drive_conversion = {PKG_NAME}.diff_drive_conversion:main',
             f'calibration = {PKG_NAME}.calibration_node:main',

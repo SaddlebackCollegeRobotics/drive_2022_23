@@ -64,14 +64,14 @@ class GamepadDrive(Node):
     """
 
     # CONSTANTS
-    TIMER_PERIOD = 0.1
+    TIMER_PERIOD = 0.25
     PRINT_TOLERANCE = 0.0001
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('gamepad_tank_drive')       
+        super().__init__('tank_drive_ controller')       
         self.last_l_analog = -1
         self.last_r_analog = -1
                                                # Create node with name 'controller_pub'

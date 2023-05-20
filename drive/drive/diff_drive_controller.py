@@ -63,13 +63,13 @@ connectionEvents = [b.onGamepadConnect, b.onGamepadDisconnect]  # Set connection
 # ========================================================================================
 class GamepadDrive(Node):
     # CONSTANTS
-    TIMER_PERIOD = 0.1
+    TIMER_PERIOD = 0.25
 
     # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('gamepad_diff_drive')       
+        super().__init__('diff_drive_controller')       
         self.last_l_analog = -1
         self.last_r_analog = -1
                                                # Create node with name 'controller_pub'

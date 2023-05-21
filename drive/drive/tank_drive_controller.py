@@ -71,7 +71,7 @@ class GamepadDrive(Node):
     # Constructor
     # ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, 
     def __init__(self):
-        super().__init__('tank_drive_ controller')       
+        super().__init__('tank_drive_controller')       
         self.last_l_analog = -1
         self.last_r_analog = -1
                                                # Create node with name 'controller_pub'

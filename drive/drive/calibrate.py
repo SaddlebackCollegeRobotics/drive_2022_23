@@ -30,6 +30,7 @@ from loguru import logger
 import threading
 import time
 import subprocess
+import os
 
 from fibre.libfibre import ObjectLostError
 
@@ -183,22 +184,15 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
 # Get serial numbers of all connected ODrives
 def get_all_odrives():
     
-    # Pull all connected devices ID to the list
-    odrivesSerialList = []
-    usbDevices = str(subprocess.run(['lsusb', '-v'], capture_output=True).stdout).split('\\n')
+    # Temp hard code
 
-    odriveFound = False
-    # Find all ODrives connected to the computer
-    for line in usbDevices:
-        if "ODrive" in line:
-            odriveFound = True
-            print(line)
+    # Note: Run find_devpath.bash to get odrive serial number.
 
-        if odriveFound and "Serial" in line:
-            odrivesSerialList.append(line[28:].strip())
-            odriveFound = False
+    # Left, right
+    return ["366B385A3030", "207937815753"]
 
-    return odrivesSerialList
+    
+
 
 
 

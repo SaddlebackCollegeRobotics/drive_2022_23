@@ -42,7 +42,7 @@ class Calibration_Node(Node):
             print("Not all ODrives connected. Exiting...")
         else:
             print("Calibrating ODrives...")
-            calibrate_all_motors(odrives[0], odrives[1])
+            calibrate_all_motors(*odrives)
             
         self.quit_program_safely()
 

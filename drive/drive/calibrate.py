@@ -6,7 +6,7 @@ import odrive
 from odrive.enums import AxisState, EncoderId, MotorType
 
 
-def get_all_odrives() -> tuple[str, str]:
+def get_all_odrives() -> tuple:
     """Get serial numbers of all connected ODrives
     
     Returns:
@@ -74,7 +74,7 @@ def _calibrate_motor(odrv_serial_num: str, axis_num: int) -> None:
     # Find Odrive
     info_str = f'[{odrv_serial_num}:{axis_num}]'
     
-    odrv = odrv.find_any(serial_number=odrv_serial_num)
+    odrv = odrive.find_any(serial_number=odrv_serial_num)
     vbus_voltage = odrv.vbus_voltage
 
     # odrv = erase_config(odrv_num, clear) TODO is this necessary?
@@ -97,13 +97,13 @@ def _calibrate_motor(odrv_serial_num: str, axis_num: int) -> None:
     # === Configure Odrive MOTOR ===
     print('[CONFIGURING] motor ...')
 
-    odrv_axis.config.motor.motor_type = MotorType.HIGH_CURRENT
-    odrv_axis.config.motor.pole_pairs = NUM_PERMANENT_MAGNETS
-    odrv_axis.config.motor.torque_constant = TORQUE_CONSTANT
-    odrv_axis.config.motor.calibration_current = MAX_CONTINUOUS_MOTOR_CURRENT / 2
-    odrv_axis.config.motor.resistance_calib_max_voltage = MAX_CALIB_VOLTAGE
-    odrv_axis.config.motor.calibration_lockin.current = MAX_CONTINUOUS_MOTOR_CURRENT / 2
-    
+    odrv_axis.motor.config.motor_type = MotorType.HIGH_CURRENT
+    odrv_axis.motor.config.pole_pairs = NUM_PERMANENT_MAGNETS
+    odrv_axis.motor.config.torque_constant = TORQUE_CONSTANT
+    odrv_axis.motor.config.calibration_current = MAX_CONTINUOUS_MOTOR_CURRENT / 2
+    odrv_axis.motor.config.resistance_calib_max_voltage = MAX_CALIB_VOLTAGE
+    odrv_axis.config.calibration_lockin.current = MAX_CONTINUOUS_MOTOR_CURRENT / 2
+
     # === Start Calibration and Save Configuration ===
     print('[CALIBRATING] ...')
     odrv_axis.requested_state = AxisState.MOTOR_CALIBRATION
@@ -122,7 +122,7 @@ def _calibrate_motor(odrv_serial_num: str, axis_num: int) -> None:
     # === Encoder Configuration ===
     print('[CALIBRATING] encoder ...')
     odrv_axis.config.encoder_bandwidth = 100  # default
-    odrv_hall_encoder.config.enabled = True
+    # odrv_hall_encoder.config.enabled = True
 
     encoder_type = EncoderId.HALL_ENCODER0 if axis_num == 0 else EncoderId.HALL_ENCODER0
     odrv_axis.config.load_encoder = encoder_type
@@ -137,3 +137,6 @@ def _calibrate_motor(odrv_serial_num: str, axis_num: int) -> None:
     odrv_axis.requested_state = AxisState.ENCODER_HALL_PHASE_CALIBRATION
     # Wait for motor to stop  #TODO how??
     print('[INFO] Calibration finished')
+    ##########################################################################################################
+
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

@@ -3,7 +3,6 @@
 # ROS2 imports
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
 from .calibrate import get_all_odrives, calibrate_all_motors
 
 # General imports
@@ -21,7 +20,7 @@ class Calibration_Node(Node):
 
 
     # Callback for Ctrl+C
-    def signalHandler(self, signal, frame):
+    def signal_handler(self, signal, frame):
         self.quit_program_safely()
 
 
@@ -29,7 +28,7 @@ class Calibration_Node(Node):
     def __init__(self):
 
         # Signal handler for Ctrl+C
-        signal(SIGINT, self.signalHandler)
+        signal(SIGINT, self.signal_handler)
 
         # Give the node a name.
         super().__init__('drive_calibration_node')
@@ -45,8 +44,6 @@ class Calibration_Node(Node):
             calibrate_all_motors(*odrives)
             
         self.quit_program_safely()
-
-
 
 
 def main(args=None):

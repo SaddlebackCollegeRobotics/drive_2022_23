@@ -189,7 +189,7 @@ def get_all_odrives():
     # Note: Run find_devpath.bash to get odrive serial number.
 
     # Left, right
-    return ["207937815753","366B385A3030"]
+    return ["204E35823056", "207937815753"]
 
     
 

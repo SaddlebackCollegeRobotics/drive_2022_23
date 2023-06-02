@@ -99,7 +99,7 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
     odrv.config.dc_bus_overvoltage_trip_level = 56.0
     odrv.config.dc_max_positive_current = 143.75
     odrv.config.dc_max_negative_current = -115
-    odrv.config.max_regen_current = 40
+    odrv.config.max_regen_current = 25
 
 
     # ------------------------------------------------------------------
@@ -112,12 +112,12 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
     #       Current Limit:       Maximum current that the motor can draw
     #       Torque Constant:     Torque constant of the motor
     axis.motor.config.pole_pairs = 7                            # Brushless NEO motors have 7 pole pairs
-    axis.motor.config.resistance_calib_max_voltage = 4.0        # Maximum voltage to apply during resistance calibration
+    axis.motor.config.resistance_calib_max_voltage = 3.0        # Maximum voltage to apply during resistance calibration
     axis.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT      # Brushless NEO motors are high current motors
     axis.motor.config.requested_current_range = 65             # Maximum current that the motor can draw
     axis.motor.config.current_control_bandwidth = 650          # Should be at least 10x the motor's current range
-    axis.motor.config.current_lim = 40                         # Maximum current that the motor can draw
-    odrv.motor.config.current_lim_margin = 20                  # 50% of current_lim
+    axis.motor.config.current_lim = 20                         # Maximum current that the motor can draw
+    axis.motor.config.current_lim_margin = 60                  # 50% of current_lim
     axis.motor.config.torque_constant = 8.27 / 473              # Brushless NEO motors have a torque constant of 8.27 mNm/Amp 
                                                                 #   and 473 is Kv of our neo motor. (Kv = RPM at max throttle)
 

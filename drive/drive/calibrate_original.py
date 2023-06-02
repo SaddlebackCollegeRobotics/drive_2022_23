@@ -97,9 +97,9 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
     #   Max Regen Current:      Set the maximum regen current
     odrv.config.dc_bus_undervoltage_trip_level = 8.0
     odrv.config.dc_bus_overvoltage_trip_level = 56.0
-    odrv.config.dc_max_positive_current = 143.75
-    odrv.config.dc_max_negative_current = -115
-    odrv.config.max_regen_current = 25
+    odrv.config.dc_max_positive_current = 120.0
+    odrv.config.dc_max_negative_current = -20.0
+    odrv.config.max_regen_current = 0
 
 
     # ------------------------------------------------------------------
@@ -114,10 +114,9 @@ def config_motor(odrv_num, axis_num, clear, powerDC):
     axis.motor.config.pole_pairs = 7                            # Brushless NEO motors have 7 pole pairs
     axis.motor.config.resistance_calib_max_voltage = 3.0        # Maximum voltage to apply during resistance calibration
     axis.motor.config.motor_type = MOTOR_TYPE_HIGH_CURRENT      # Brushless NEO motors are high current motors
-    axis.motor.config.requested_current_range = 65             # Maximum current that the motor can draw
-    axis.motor.config.current_control_bandwidth = 650          # Should be at least 10x the motor's current range
-    axis.motor.config.current_lim = 20                         # Maximum current that the motor can draw
-    axis.motor.config.current_lim_margin = 60                  # 50% of current_lim
+    axis.motor.config.requested_current_range = 100             # Maximum current that the motor can draw
+    axis.motor.config.current_control_bandwidth = 2000          # Should be at least 10x the motor's current range
+    axis.motor.config.current_lim = 100                         # Maximum current that the motor can draw
     axis.motor.config.torque_constant = 8.27 / 473              # Brushless NEO motors have a torque constant of 8.27 mNm/Amp 
                                                                 #   and 473 is Kv of our neo motor. (Kv = RPM at max throttle)
 
@@ -272,10 +271,10 @@ def calib_motor(odrv_num, axis_num):
 def calibrate_all_motors(odrv0, odrv1):
     print("Odrive 0: ", odrv0, "\nOdrive 1: ", odrv1, "\n\n\n")
     
-    config_motor(odrv0, 0, True, True)
-    config_motor(odrv0, 1, False, True)
-    config_motor(odrv1, 0, True, True)
-    config_motor(odrv1, 1, False, True)
+    config_motor(odrv0, 0, True, False)
+    config_motor(odrv0, 1, False, False)
+    config_motor(odrv1, 0, True, False)
+    config_motor(odrv1, 1, False, False)
     
 
     t00 = threading.Thread(target=calib_motor, args=(odrv0, 0)) 

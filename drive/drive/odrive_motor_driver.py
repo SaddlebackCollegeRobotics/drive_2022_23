@@ -191,6 +191,10 @@ class DriveReceiverSub(Node):
         # Heartbeat packet
         self.time_of_last_callback = perf_counter()
 
+        # TODO - Temporary fix. Need to finish polishing config file.
+        self.odrv0.clear_errors()
+        self.odrv1.clear_errors()
+
         (l_analog, r_analog) = msg.data
 
         self.close_loop_control()
